@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chilaquiles de la Carretera</title><link rel="stylesheet" href="styles.css?v=13"></head>
+<body>
+
+<div id="premiumCover" class="premium-cover">
+  <video id="premiumBgVideo" class="premium-bg-video hidden" autoplay muted loop playsinline preload="metadata"></video>
+  <div class="premium-video-overlay"></div>
+  <div class="premium-glow"></div>
+  <div class="premium-card">
+    <img id="premiumLogo" class="premium-logo" src="logo_sugerido.png" alt="Logo">
+    <div class="premium-kicker">Menú digital</div>
+    <h1 id="premiumTitle" class="premium-title">Chilaquiles de la Carretera</h1>
+    <p id="premiumSubtitle" class="premium-subtitle">
+      Sabor casero, ingredientes frescos y antojos preparados al momento.
+    </p>
+    <div class="premium-mini">
+      <span class="premium-chip">🌶️ Preparado al momento</span>
+      <span class="premium-chip">📲 Pedido por WhatsApp</span>
+      <span class="premium-chip">🎥 Menú con video</span>
+    </div>
+    <div class="premium-actions">
+      <button class="premium-enter" type="button" onclick="enterMenu()">Ver menú</button>
+    </div>
+    <div class="premium-note">Toca para entrar al menú completo</div>
+  </div>
+</div>
+
+<div style="max-width:820px;margin:0 auto;padding:18px">
+<article class="menu-card"><div class="menu-hero"><img class="public-logo hidden" data-restaurant-logo alt="Logo"><h1 data-restaurant-name>Chilaquiles de la Carretera</h1><p>MENÚ</p></div>
+
+<div id="publicVoiceCard" class="public-voice-card hidden">
+  <div class="public-voice-text">
+    <strong>🎙️ Conoce Chilaquiles de la Carretera</strong>
+    <span>Escucha nuestra presentación de 20 segundos.</span>
+  </div>
+  <button id="publicVoicePlay" class="public-voice-play" type="button">▶ Escuchar</button>
+</div>
+
+<div id="menu" class="menu-content"></div><div class="menu-footer">¡GRACIAS POR SU PREFERENCIA! · Buen provecho</div></article>
+</div>
+
+<audio id="bgMusic" loop preload="auto"></audio>
+<div id="musicHint" class="music-hint">Música ambiental suave</div>
+<button id="musicToggle" class="music-toggle off hidden" type="button" aria-label="Activar o silenciar música">🎵</button>
+
+<script src="config.js?v=13"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="shared.js?v=13"></script>
+<script>
+
+function setupPremiumVideo(menuData){
+  try{
+    const products=[];
+    (menuData||[]).forEach(c=>{
+      (c.products||[]).forEach(p=>{
+        if(p && p.visible!==false && p.video_url) products.push(p);
+      });
+    });
+    const first=products[0];
+    const video=document.getElementById("premiumBgVideo");
+    const cover=document.getElementById("premiumCover");
+    if(!video || !first) return;
+    video.src=first.video_url;
+    video.classList.remove("hidden");
+    cover?.classList.add("has-video");
+    video.muted=true;
+    video.loop=true;
+    video.playsInline=true;
+    const tryPlay=()=>video.play().catch(()=>{});
+    tryPlay();
+    document.addEventListener("click",tryPlay,{once:true});
+    document.addEventListener("touchstart",tryPlay,{once:true});
+  }catch(e){}
+}
+
+
+function enterMenu(){
+  const cover=document.getElementById("premiumCover");
+  if(cover) cover.classList.add("is-hidden");
+  try{
+    if(typeof startAudioAfterInteraction==="function") startAudioAfterInteraction();
+  }catch(e){}
+}
+function setupPremiumCover(r){
+  const t=document.getElementById("premiumTitle");
+  const l=document.getElementById("premiumLogo");
+  if(t) t.textContent=r?.name || "Chilaquiles de la Carretera";
+  if(l && r?.logo_url) l.src=r.logo_url;
+}
+
+
+let cart=[];
+let currentRestaurant=null;
+
+function parsePriceForCart(value){
+  const m=String(value??"").replace(",",".").match(/(\d+(?:\.\d+)?)/);
+  return m ? Number(m[1]) : 0;
+}
+function effectivePrice(p){
+  return parsePriceForCart(p.promo_price || p.price);
+}
+function addToCart(p){
+  if(p.available===false)return;
+  const key=p.id || p.name;
+  const found=cart.find(x=>x.key===key);
+  if(found) found.qty += 1;
+  else cart.push({key,name:p.name,price:effectivePrice(p),qty:1});
+  updateCartUI();
+  document.getElementById("cartFab").classList.remove("hidden");
+}
+function changeQty(key,delta){
+  const item=cart.find(x=>x.key===key);
+  if(!item)return;
+  item.qty += delta;
+  if(item.qty<=0) cart=cart.filter(x=>x.key!==key);
+  updateCartUI();
+}
+function updateCartUI(){
+  const count=cart.reduce((s,x)=>s+x.qty,0);
+  const total=cart.reduce((s,x)=>s+x.qty*x.price,0);
+  document.getElementById("cartCount").textContent=count;
+  document.getElementById("cartTotal").textContent="$"+total.toFixed(0);
+  const box=document.getElementById("cartItems");
+  box.innerHTML="";
+  cart.forEach(item=>{
+    const row=document.createElement("div");
+    row.className="cart-item";
+    row.innerHTML=`<div><strong>${eh(item.name)}</strong><small>$${item.price.toFixed(0)} c/u</small>
+      <div class="qty-row">
+        <button class="qty-btn" onclick="changeQty('${String(item.key).replace(/'/g,"\\'")}',-1)">−</button>
+        <span>${item.qty}</span>
+        <button class="qty-btn" onclick="changeQty('${String(item.key).replace(/'/g,"\\'")}',1)">+</button>
+      </div></div>
+      <strong>$${(item.price*item.qty).toFixed(0)}</strong>`;
+    box.appendChild(row);
+  });
+  if(count===0){
+    box.innerHTML='<p style="color:#777">Tu pedido está vacío.</p>';
+    document.getElementById("cartFab").classList.add("hidden");
+  }
+}
+function openCart(){updateCartUI();document.getElementById("cartModal").classList.remove("hidden")}
+function closeCart(){document.getElementById("cartModal").classList.add("hidden")}
+function sendWhatsApp(){
+  if(!cart.length){alert("Agrega al menos un producto.");return}
+  const number=(currentRestaurant?.whatsapp_number||"").replace(/\D/g,"");
+  if(!number){
+    alert("El negocio todavía no ha configurado su número de WhatsApp.");
+    return;
+  }
+  const total=cart.reduce((s,x)=>s+x.qty*x.price,0);
+  let text=`Hola, quiero hacer este pedido en ${currentRestaurant?.name||"Chilaquiles de la Carretera"}:%0A%0A`;
+  cart.forEach(x=>{
+    text += `• ${x.qty} x ${x.name} - $${(x.qty*x.price).toFixed(0)}%0A`;
+  });
+  text += `%0A*Total estimado: $${total.toFixed(0)}*`;
+  const notes=document.getElementById("cartNotes").value.trim();
+  if(notes) text += `%0A%0AIndicaciones: ${encodeURIComponent(notes)}`;
+  window.open(`https://wa.me/${number}?text=${text}`,"_blank");
+}
+
+
+let musicStarted=false;
+let musicEnabled=true;
+
+
+let voicePlayedOnce=false;
+let voiceIsPlaying=false;
+
+function duckMusic(){
+  const music=document.getElementById("bgMusic");
+  if(music && !music.paused){
+    music.dataset.prevVolume=String(music.volume||0.12);
+    music.volume=0.03;
+  }
+}
+
+function restoreMusic(){
+  const music=document.getElementById("bgMusic");
+  if(music){
+    const prev=parseFloat(music.dataset.prevVolume||"0.12");
+    music.volume=isNaN(prev)?0.12:prev;
+  }
+}
+
+function setupVoiceOver(restaurant){
+  const voice=document.getElementById("voiceOver");
+  const btn=document.getElementById("voiceButton");
+  const toast=document.getElementById("voiceToast");
+  const publicCard=document.getElementById("publicVoiceCard");
+  const publicBtn=document.getElementById("publicVoicePlay");
+  if(!restaurant?.voiceover_url){
+    btn.classList.add("hidden");
+    return;
+  }
+
+  voice.src=restaurant.voiceover_url;
+  voice.volume=0.82;
+  btn.classList.remove("hidden");
+  if(publicCard) publicCard.classList.remove("hidden");
+
+  const playVoice=()=>{
+    if(voiceIsPlaying)return;
+    duckMusic();
+    voice.currentTime=0;
+    const p=voice.play();
+    if(p && typeof p.then==="function"){
+      p.then(()=>{
+        voiceIsPlaying=true;
+        voicePlayedOnce=true;
+        btn.textContent="⏸ Detener presentación";
+        btn.classList.add("playing");
+        if(publicBtn){publicBtn.textContent="⏸ Detener";publicBtn.classList.add("playing");}
+        toast.classList.add("show");
+        setTimeout(()=>toast.classList.remove("show"),1800);
+      }).catch(()=>restoreMusic());
+    }
+  };
+
+  const stopVoice=()=>{
+    voice.pause();
+    voice.currentTime=0;
+    voiceIsPlaying=false;
+    btn.textContent="🔊 Escuchar presentación";
+    btn.classList.remove("playing");
+    if(publicBtn){publicBtn.textContent="▶ Escuchar";publicBtn.classList.remove("playing");}
+    restoreMusic();
+  };
+
+  
+  if(publicBtn){
+    publicBtn.addEventListener("click",(e)=>{
+      e.stopPropagation();
+      if(voiceIsPlaying) stopVoice();
+      else playVoice();
+    });
+  }
+
+  btn.addEventListener("click",(e)=>{
+    e.stopPropagation();
+    if(voiceIsPlaying) stopVoice();
+    else playVoice();
+  });
+
+  voice.addEventListener("ended",()=>{
+    voiceIsPlaying=false;
+    btn.textContent="🔊 Escuchar presentación";
+    btn.classList.remove("playing");
+    if(publicBtn){publicBtn.textContent="▶ Escuchar";publicBtn.classList.remove("playing");}
+    restoreMusic();
+  });
+
+  // En móvil, la primera interacción del usuario permite iniciar audio.
+  const firstInteraction=()=>{
+    if(!voicePlayedOnce) playVoice();
+  };
+  ["pointerdown","touchstart","keydown"].forEach(evt=>{
+    document.addEventListener(evt,firstInteraction,{once:true,passive:true});
+  });
+}
+
+function setupBackgroundMusic(restaurant){
+  const audio=document.getElementById("bgMusic");
+  const btn=document.getElementById("musicToggle");
+  const hint=document.getElementById("musicHint");
+  if(!restaurant?.background_music_url){
+    btn.classList.add("hidden");
+    return;
+  }
+
+  audio.src=restaurant.background_music_url;
+  audio.volume=0.12; // volumen bajo: 12%
+  audio.loop=true;
+  btn.classList.remove("hidden");
+  if(publicCard) publicCard.classList.remove("hidden");
+
+  const startMusic=()=>{
+    if(!musicEnabled || musicStarted)return;
+    audio.volume=0.12;
+    const p=audio.play();
+    if(p && typeof p.then==="function"){
+      p.then(()=>{
+        musicStarted=true;
+        btn.textContent="🔈";
+        btn.classList.remove("off");
+        hint.classList.add("show");
+        setTimeout(()=>hint.classList.remove("show"),1800);
+      }).catch(()=>{});
+    }
+  };
+
+  // En móviles el navegador exige una primera interacción del usuario.
+  ["pointerdown","touchstart","keydown"].forEach(evt=>{
+    document.addEventListener(evt,startMusic,{once:true,passive:true});
+  });
+
+  
+  if(publicBtn){
+    publicBtn.addEventListener("click",(e)=>{
+      e.stopPropagation();
+      if(voiceIsPlaying) stopVoice();
+      else playVoice();
+    });
+  }
+
+  btn.addEventListener("click",(e)=>{
+    e.stopPropagation();
+    if(!musicStarted){
+      musicEnabled=true;
+      startMusic();
+      return;
+    }
+    if(audio.paused){
+      musicEnabled=true;
+      audio.volume=0.12;
+      audio.play().catch(()=>{});
+      btn.textContent="🔈";
+      btn.classList.remove("off");
+    }else{
+      musicEnabled=false;
+      audio.pause();
+      btn.textContent="🔇";
+      btn.classList.add("off");
+    }
+  });
+}
+
+async function load(){
+ if(!cfgReady()){menu.innerHTML="<p>Configuración incompleta.</p>";return}
+ const sb=makeClient(),slug=getSlug();
+ const {data:r,error}=await sb.from("restaurants").select("*").eq("slug",slug).eq("active",true).single();
+ if(error||!r){menu.innerHTML="<p>Menú no encontrado.</p>";return}
+ const {data:cats}=await sb.from("categories").select("*").eq("restaurant_id",r.id).order("sort_order");
+ const ids=(cats||[]).map(x=>x.id); let products=[];
+ if(ids.length){const {data:p}=await sb.from("products").select("*").in("category_id",ids).order("sort_order");products=p||[]}
+ (cats||[]).forEach(c=>c.products=products.filter(p=>p.category_id===c.id));
+ renderMenu(menu,r,cats||[]);
+ setupPremiumVideo(menu);
+ currentRestaurant=r;
+ setupPremiumCover(r);
+ setupBackgroundMusic(r);
+ setupVoiceOver(r);
+}
+load();
+</script>
+<button id="cartFab" class="cart-fab hidden" type="button" onclick="openCart()">
+  🛒 Pedido <span id="cartCount" class="cart-count">0</span>
+</button>
+
+<div id="cartModal" class="cart-modal hidden">
+  <div class="cart-sheet">
+    <div class="cart-head">
+      <h2>Tu pedido</h2>
+      <button class="cart-close" onclick="closeCart()">×</button>
+    </div>
+    <div id="cartItems"></div>
+    <div class="cart-total">
+      <span>Total</span><span id="cartTotal">$0</span>
+    </div>
+    <textarea id="cartNotes" class="cart-notes" placeholder="Indicaciones: sin cebolla, salsa aparte, etc."></textarea>
+    <button class="whatsapp-send" onclick="sendWhatsApp()">📲 Enviar pedido por WhatsApp</button>
+  </div>
+</div>
+
+</body></html>

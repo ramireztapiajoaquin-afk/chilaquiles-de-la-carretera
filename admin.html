@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Administrar Chilaquiles</title><link rel="stylesheet" href="styles.css?v=13"></head>
+<body>
+<div id="login" class="login-page"><div class="login-card"><div class="logo">🌶️</div><h1>Administrador</h1><p>Chilaquiles de la Carretera</p>
+<input id="email" type="email" placeholder="Correo"><input id="password" type="password" placeholder="Contraseña">
+<button class="btn primary" style="width:100%" onclick="doLogin()">Entrar</button><div id="loginStatus"></div></div></div>
+
+<div id="app" class="hidden"><header class="topbar">
+<div class="brand"><div class="logo">🌶️</div><div><strong>Editor de Menú</strong><small data-restaurant-name></small></div></div>
+<div><button class="btn desktop" onclick="openPublic()">Ver público</button> <button class="btn primary" onclick="saveAll()">Guardar cambios</button> <button class="btn desktop" onclick="logout()">Salir</button></div>
+</header>
+<div class="wrap"><div class="grid">
+<section class="panel"><div class="panel-title">Productos, imágenes y videos</div>
+<div class="brand-settings">
+  <h3>Logo y título del negocio</h3>
+  <div class="brand-grid">
+    <div id="logoAdminBox"></div>
+    <div class="brand-fields">
+      <label for="businessName">Título / nombre del negocio</label>
+      <input id="businessName" type="text" placeholder="Chilaquiles de la Carretera" oninput="editBusinessName(this.value)">
+      <div class="logo-upload-row">
+        <label>Subir / cambiar logo
+          <input id="logoFile" type="file" accept="image/png,image/jpeg,image/webp" onchange="uploadLogo(this)">
+        </label>
+        <button class="btn danger" type="button" onclick="removeLogo()">Quitar logo</button>
+      </div>
+      <div class="note" style="padding:8px 0 0">Recomendado: PNG con fondo transparente, menor a 3 MB.</div>
+    </div>
+  </div>
+</div>
+
+<div class="music-settings">
+  <h3>🎵 Música de fondo</h3>
+  <div id="musicAdminBox"></div>
+  <div class="music-row">
+    <label class="upload-label" style="font-size:13px">
+      Subir / cambiar música
+      <input type="file" accept="audio/mpeg,audio/mp4,.mp3,.m4a" onchange="uploadMusic(this)">
+    </label>
+    <button class="btn danger" type="button" onclick="removeMusic()">Quitar música</button>
+  </div>
+  <div class="music-note">Se reproducirá en bucle a volumen bajo (12%). En celular comenzará después del primer toque del visitante.</div>
+</div>
+
+<div class="voice-settings">
+  <h3>🎙️ Voz en off / presentación</h3>
+  <div id="voiceAdminBox"></div>
+  <div class="voice-row">
+    <label class="upload-label" style="font-size:13px">
+      Subir / cambiar voz en off
+      <input type="file" accept="audio/mpeg,audio/mp4,.mp3,.m4a" onchange="uploadVoice(this)">
+    </label>
+    <button class="btn danger" type="button" onclick="removeVoice()">Quitar voz</button>
+  </div>
+  <div class="voice-note">Recomendado: presentación de 10–20 segundos. Durante la voz, la música baja automáticamente y al terminar vuelve a su volumen suave.</div>
+</div>
+
+
+<div class="whatsapp-settings">
+  <h3>📲 WhatsApp para pedidos</h3>
+  <input id="whatsappNumber" type="text" placeholder="Ejemplo: 5215512345678" oninput="restaurant.whatsapp_number=this.value;dirty=true">
+  <div class="note">Escribe país + lada + número, sin espacios ni signos. Ejemplo México: 5215512345678.</div>
+</div>
+
+<div class="toolbar"><button class="btn primary" onclick="addCategory()">+ Categoría</button></div>
+<div class="note">Imagen: JPG/PNG menor a 3 MB. Video: MP4/WebM menor a 10 MB. En celular puedes elegir desde Fotos/Archivos.</div>
+<div id="editor"></div><div id="saveStatus"></div></section>
+<section class="panel preview-panel"><div class="panel-title">Vista previa</div><div class="preview-wrap">
+<article class="menu-card"><div class="menu-hero"><img class="public-logo hidden" data-restaurant-logo alt="Logo"><h1 data-restaurant-name></h1><p>MENÚ</p></div><div id="preview" class="menu-content"></div><div class="menu-footer">¡GRACIAS POR SU PREFERENCIA!</div></article>
+</div></section>
+</div></div></div>
+
+<script src="config.js?v=13"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="shared.js?v=13"></script>
+<script>
+let sb,restaurant,categories=[],dirty=false;
+function msg(el,t,ok=true){el.innerHTML=`<div class="status ${ok?"ok":"err"}">${eh(t)}</div>`}
+async function boot(){if(!cfgReady())return msg(loginStatus,"Configura Supabase.",false);sb=makeClient();const {data:{session}}=await sb.auth.getSession();if(session)enter()}
+async function doLogin(){sb=sb||makeClient();const {error}=await sb.auth.signInWithPassword({email:email.value.trim(),password:password.value});if(error)return msg(loginStatus,"No se pudo iniciar sesión: "+error.message,false);enter()}
+async function enter(){const slug=getSlug();const {data:r,error}=await sb.from("restaurants").select("*").eq("slug",slug).single();if(error||!r)return msg(loginStatus,"No tienes acceso a este restaurante.",false);restaurant=r;await load();businessName.value=restaurant.name||"";renderLogoAdmin();renderMusicAdmin();renderVoiceAdmin();whatsappNumber.value=restaurant.whatsapp_number||"";login.classList.add("hidden");app.classList.remove("hidden")}
+async function load(){const {data:cats,error}=await sb.from("categories").select("*").eq("restaurant_id",restaurant.id).order("sort_order");if(error)return msg(saveStatus,error.message,false);categories=cats||[];const ids=categories.map(x=>x.id);let prods=[];if(ids.length){const {data:p,error:pe}=await sb.from("products").select("*").in("category_id",ids).order("sort_order");if(pe)return msg(saveStatus,pe.message,false);prods=p||[]}categories.forEach(c=>c.products=prods.filter(p=>p.category_id===c.id));render()}
+function imageEditor(p,ci,pi){
+ return p.image_url
+  ? `<img src="${eh(p.image_url)}" alt=""><label class="upload-label">Cambiar imagen<input type="file" accept="image/*" onchange="uploadImage(${ci},${pi},this)"></label><button class="remove-media" onclick="removeImage(${ci},${pi})">Quitar imagen</button>`
+  : `<div class="placeholder">📷</div><label class="upload-label">Subir imagen<input type="file" accept="image/*" onchange="uploadImage(${ci},${pi},this)"></label>`;
+}
+function videoEditor(p,ci,pi){
+ return p.video_url
+  ? `<video src="${eh(p.video_url)}" autoplay muted loop playsinline preload="auto"></video><label class="upload-label">Cambiar video<input type="file" accept="video/mp4,video/webm" onchange="uploadVideo(${ci},${pi},this)"></label><button class="remove-media" onclick="removeVideo(${ci},${pi})">Quitar video</button>`
+  : `<div class="placeholder">🎬</div><label class="upload-label">Subir video<input type="file" accept="video/mp4,video/webm" onchange="uploadVideo(${ci},${pi},this)"></label>`;
+}
+function render(){
+ document.querySelectorAll("[data-restaurant-name]").forEach(x=>x.textContent=restaurant.name);editor.innerHTML="";
+ categories.filter(c=>!c._delete).forEach((c,ci)=>{
+  const box=document.createElement("div");box.className="cat";box.innerHTML=`<div class="cathead"><input class="catname" value="${eh(c.name)}" oninput="editCat(${ci},'name',this.value)"><div class="actions"><button class="icon" onclick="moveCat(${ci},-1)">▲</button><button class="icon" onclick="moveCat(${ci},1)">▼</button><button class="icon" onclick="delCat(${ci})">🗑</button></div></div><div id="p${ci}"></div><button class="add" onclick="addProduct(${ci})">+ Producto</button>`;
+  editor.appendChild(box);const pb=box.querySelector("#p"+ci);
+  (c.products||[]).filter(p=>!p._delete).forEach((p,pi)=>{
+   const row=document.createElement("div");row.className="product-row";
+   row.innerHTML=`<div class="media-editor">${imageEditor(p,ci,pi)}</div><div class="media-editor">${videoEditor(p,ci,pi)}</div>
+    <input type="text" value="${eh(p.name)}" oninput="editProd(${ci},${pi},'name',this.value)" placeholder="Producto">
+    <input type="text" class="price-input" value="${eh(p.price)}" oninput="editProd(${ci},${pi},'price',this.value)" placeholder="Precio">
+    <input type="text" class="promo-input" value="${eh(p.promo_price||"")}" oninput="editProd(${ci},${pi},'promo_price',this.value)" placeholder="Promo">
+    <div class="flags"><label><input type="checkbox" ${p.visible!==false?"checked":""} onchange="editProd(${ci},${pi},'visible',this.checked)"> Visible</label><label><input type="checkbox" ${p.available!==false?"checked":""} onchange="editProd(${ci},${pi},'available',this.checked)"> Disponible</label></div>
+    <div class="actions row-actions"><button class="icon" onclick="moveProd(${ci},${pi},-1)">▲</button><button class="icon" onclick="moveProd(${ci},${pi},1)">▼</button><button class="icon" onclick="delProd(${ci},${pi})">🗑</button></div>`;
+   pb.appendChild(row);
+  });
+ });renderMenu(preview,restaurant,categories)
+}
+function mark(){dirty=true;renderMenu(preview,restaurant,categories)}
+function editCat(i,k,v){categories[i][k]=v;mark()}function editProd(i,j,k,v){categories[i].products[j][k]=v;mark()}
+function addCategory(){categories.push({id:null,name:"NUEVA CATEGORÍA",visible:true,products:[]});mark();render()}
+function addProduct(i){categories[i].products.push({id:null,name:"Nuevo producto",price:"0",promo_price:"",image_url:"",video_url:"",visible:true,available:true,tag:""});mark();render()}
+function delCat(i){if(confirm("¿Eliminar categoría?")){categories[i]._delete=true;mark();render()}}function delProd(i,j){if(confirm("¿Eliminar producto?")){categories[i].products[j]._delete=true;mark();render()}}
+function moveCat(i,d){const n=i+d;if(n<0||n>=categories.length)return;[categories[i],categories[n]]=[categories[n],categories[i]];mark();render()}
+function moveProd(i,j,d){const a=categories[i].products,n=j+d;if(n<0||n>=a.length)return;[a[j],a[n]]=[a[n],a[j]];mark();render()}
+async function uploadTo(bucket,file,maxMb,restaurantId){
+ if(file.size>maxMb*1024*1024)throw new Error(`El archivo supera ${maxMb} MB.`);
+ const ext=(file.name.split(".").pop()||"bin").toLowerCase();
+ const path=`${restaurantId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+ const {error}=await sb.storage.from(bucket).upload(path,file,{cacheControl:"3600",upsert:false,contentType:file.type||undefined});
+ if(error)throw error;const {data}=sb.storage.from(bucket).getPublicUrl(path);return data.publicUrl;
+}
+async function uploadImage(ci,pi,input){
+ const file=input.files?.[0];if(!file)return;
+ try{categories[ci].products[pi].image_url=await uploadTo(APP_CONFIG.IMAGE_BUCKET,file,3,restaurant.id);mark();render()}
+ catch(e){alert("No se pudo subir la imagen: "+e.message)}
+}
+async function uploadVideo(ci,pi,input){
+ const file=input.files?.[0];if(!file)return;
+ if(!["video/mp4","video/webm"].includes(file.type)){alert("Usa video MP4 o WebM.");return}
+ try{categories[ci].products[pi].video_url=await uploadTo(APP_CONFIG.VIDEO_BUCKET,file,10,restaurant.id);mark();render()}
+ catch(e){alert("No se pudo subir el video: "+e.message)}
+}
+function removeImage(ci,pi){categories[ci].products[pi].image_url="";mark();render()}
+function removeVideo(ci,pi){categories[ci].products[pi].video_url="";mark();render()}
+
+function renderLogoAdmin(){
+  const box=document.getElementById("logoAdminBox");
+  if(!box)return;
+  if(restaurant?.logo_url){
+    box.innerHTML=`<img class="logo-admin-preview" src="${eh(restaurant.logo_url)}" alt="Logo">`;
+  }else{
+    box.innerHTML=`<div class="logo-placeholder">Sin logo<br>Sube el nuevo logo</div>`;
+  }
+}
+function editBusinessName(v){
+  restaurant.name=v;
+  document.querySelectorAll("[data-restaurant-name]").forEach(x=>x.textContent=v||"Chilaquiles de la Carretera");
+  dirty=true;
+}
+async function uploadLogo(input){
+  const file=input.files?.[0]; if(!file)return;
+  if(file.size>3*1024*1024){alert("El logo supera 3 MB.");input.value="";return}
+  const ext=(file.name.split(".").pop()||"png").toLowerCase();
+  const path=`${restaurant.id}/logo/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const {error}=await sb.storage.from(APP_CONFIG.IMAGE_BUCKET||"menu-images").upload(path,file,{
+    cacheControl:"3600",upsert:false,contentType:file.type||undefined
+  });
+  if(error){alert("No se pudo subir el logo: "+error.message);return}
+  const {data}=sb.storage.from(APP_CONFIG.IMAGE_BUCKET||"menu-images").getPublicUrl(path);
+  restaurant.logo_url=data.publicUrl;
+  dirty=true;
+  renderLogoAdmin();
+  document.querySelectorAll("[data-restaurant-logo]").forEach(img=>{
+    img.src=restaurant.logo_url;img.classList.remove("hidden");
+    img.closest(".menu-hero")?.classList.add("has-logo");
+  });
+}
+function removeLogo(){
+  restaurant.logo_url="";
+  dirty=true;
+  renderLogoAdmin();
+  document.querySelectorAll("[data-restaurant-logo]").forEach(img=>{
+    img.removeAttribute("src");img.classList.add("hidden");
+    img.closest(".menu-hero")?.classList.remove("has-logo");
+  });
+}
+
+
+function renderMusicAdmin(){
+  const box=document.getElementById("musicAdminBox");
+  if(!box)return;
+  if(restaurant?.background_music_url){
+    box.innerHTML=`<audio class="music-preview" src="${eh(restaurant.background_music_url)}" controls loop></audio>`;
+    const a=box.querySelector("audio");
+    if(a)a.volume=0.12;
+  }else{
+    box.innerHTML=`<div class="note" style="padding:0 0 10px">Sin música cargada.</div>`;
+  }
+}
+
+async function uploadMusic(input){
+  const file=input.files?.[0];
+  if(!file)return;
+  const ext=(file.name.split(".").pop()||"").toLowerCase();
+  const allowed=["mp3","m4a"];
+  if(!allowed.includes(ext) && !["audio/mpeg","audio/mp4"].includes(file.type)){
+    alert("Usa un archivo MP3 o M4A.");
+    input.value="";
+    return;
+  }
+  if(file.size>15*1024*1024){
+    alert("La música supera 15 MB.");
+    input.value="";
+    return;
+  }
+  const path=`${restaurant.id}/music/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext||"mp3"}`;
+  const {error}=await sb.storage.from(APP_CONFIG.AUDIO_BUCKET||"menu-audio").upload(path,file,{
+    cacheControl:"3600",
+    upsert:false,
+    contentType:file.type||undefined
+  });
+  if(error){
+    alert("No se pudo subir la música: "+error.message);
+    return;
+  }
+  const {data}=sb.storage.from(APP_CONFIG.AUDIO_BUCKET||"menu-audio").getPublicUrl(path);
+  restaurant.background_music_url=data.publicUrl;
+  dirty=true;
+  renderMusicAdmin();
+}
+
+function removeMusic(){
+  restaurant.background_music_url="";
+  dirty=true;
+  renderMusicAdmin();
+}
+
+
+function renderVoiceAdmin(){
+  const box=document.getElementById("voiceAdminBox");
+  if(!box)return;
+  if(restaurant?.voiceover_url){
+    box.innerHTML=`<audio class="voice-preview" src="${eh(restaurant.voiceover_url)}" controls></audio>`;
+  }else{
+    box.innerHTML=`<div class="note" style="padding:0 0 10px">Sin voz en off cargada.</div>`;
+  }
+}
+
+async function uploadVoice(input){
+  const file=input.files?.[0];
+  if(!file)return;
+  const ext=(file.name.split(".").pop()||"").toLowerCase();
+  const allowed=["mp3","m4a"];
+  if(!allowed.includes(ext) && !["audio/mpeg","audio/mp4"].includes(file.type)){
+    alert("Usa un archivo MP3 o M4A.");
+    input.value="";
+    return;
+  }
+  if(file.size>10*1024*1024){
+    alert("La voz en off supera 10 MB.");
+    input.value="";
+    return;
+  }
+  const path=`${restaurant.id}/voice/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext||"mp3"}`;
+  const {error}=await sb.storage.from(APP_CONFIG.VOICE_BUCKET||"menu-voice").upload(path,file,{
+    cacheControl:"3600",
+    upsert:false,
+    contentType:file.type||undefined
+  });
+  if(error){
+    alert("No se pudo subir la voz en off: "+error.message);
+    return;
+  }
+  const {data}=sb.storage.from(APP_CONFIG.VOICE_BUCKET||"menu-voice").getPublicUrl(path);
+  restaurant.voiceover_url=data.publicUrl;
+  dirty=true;
+  renderVoiceAdmin();
+}
+
+function removeVoice(){
+  restaurant.voiceover_url="";
+  dirty=true;
+  renderVoiceAdmin();
+}
+
+async function saveAll(){
+ try{
+  const {error:restErr}=await sb.from("restaurants").update({name:restaurant.name,logo_url:restaurant.logo_url||"",background_music_url:restaurant.background_music_url||"",voiceover_url:restaurant.voiceover_url||"",whatsapp_number:restaurant.whatsapp_number||""}).eq("id",restaurant.id);if(restErr)throw restErr;
+  for(const c of categories.filter(x=>x._delete&&x.id))await sb.from("categories").delete().eq("id",c.id);
+  categories=categories.filter(x=>!x._delete);
+  for(let i=0;i<categories.length;i++){
+   let c=categories[i],cp={restaurant_id:restaurant.id,name:c.name,visible:c.visible!==false,sort_order:i};
+   if(c.id){let {error}=await sb.from("categories").update(cp).eq("id",c.id);if(error)throw error}
+   else{let {data:n,error}=await sb.from("categories").insert(cp).select().single();if(error)throw error;c.id=n.id}
+   for(const p of (c.products||[]).filter(x=>x._delete&&x.id)){let {error}=await sb.from("products").delete().eq("id",p.id);if(error)throw error}
+   c.products=(c.products||[]).filter(x=>!x._delete);
+   for(let j=0;j<c.products.length;j++){
+    let p=c.products[j],pp={category_id:c.id,name:p.name,price:String(p.price||""),promo_price:String(p.promo_price||""),image_url:p.image_url||"",video_url:p.video_url||"",visible:p.visible!==false,available:p.available!==false,tag:p.tag||"",sort_order:j};
+    if(p.id){let {error}=await sb.from("products").update(pp).eq("id",p.id);if(error)throw error}
+    else{let {data:n,error}=await sb.from("products").insert(pp).select().single();if(error)throw error;p.id=n.id}
+   }
+  }
+  dirty=false;msg(saveStatus,"Menú actualizado correctamente.");await load()
+ }catch(e){msg(saveStatus,"Error al guardar: "+e.message,false)}
+}
+function openPublic(){open("index.html?slug="+encodeURIComponent(restaurant.slug),"_blank")}async function logout(){await sb.auth.signOut();location.reload()}boot();
+</script></body></html>
