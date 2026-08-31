@@ -58,6 +58,7 @@
     .actions{display:flex;gap:8px;flex-wrap:wrap}
     .actions .btn{flex:1;min-width:120px}
     .accept{background:var(--green);color:#fff}
+    .cancel{background:#ffe2df;color:#9b2119}
     .prep{background:#e6f2ff;color:#12568b}.ready{background:var(--yellow);color:#3f3500}.delivered{background:#e8f7ed;color:#17643a}.paid{background:#111;color:#fff}
     .payment-title{width:100%;font-size:12px;color:var(--muted);font-weight:900;text-align:center}.cash{background:#167344;color:#fff}.cardpay{background:#155a91;color:#fff}.transfer{background:#6a3b94;color:#fff}
     .request{background:#fff;border:1px solid var(--line);border-radius:18px;padding:15px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:var(--shadow);margin-bottom:10px}
@@ -239,9 +240,9 @@ function orderCard(o,isMine){
   const itemHtml=items.length?items.map(i=>`<li><span><b>${Number(i.cantidad||1)}×</b> ${html(i.producto)}</span><b>${money2(Number(i.precio||0)*Number(i.cantidad||1))}</b></li>`).join(''):'<li><span>Cargando productos…</span></li>';
   let actions='';
   if(!isMine){
-    actions=`<button class="btn accept" onclick="acceptOrder('${o.id}')">ACEPTAR PEDIDO</button>`;
+    actions=`<button class="btn accept" onclick="acceptOrder('${o.id}')">ACEPTAR PEDIDO</button><button class="btn cancel" onclick="cancelOrder('${o.id}')">CANCELAR</button>`;
   }else{
-    if(o.estado==='aceptado') actions=`<button class="btn prep" onclick="setOrderState('${o.id}','en_preparacion')">EN PREPARACIÓN</button>`;
+    if(o.estado==='aceptado') actions=`<button class="btn prep" onclick="setOrderState('${o.id}','en_preparacion')">EN PREPARACIÓN</button><button class="btn cancel" onclick="cancelOrder('${o.id}')">CANCELAR</button>`;
     else if(o.estado==='en_preparacion') actions=`<button class="btn ready" onclick="setOrderState('${o.id}','listo')">MARCAR LISTO</button>`;
     else if(o.estado==='listo') actions=`<button class="btn delivered" onclick="setOrderState('${o.id}','entregado')">ENTREGADO</button>`;
     else if(o.estado==='entregado') actions=`<div class="payment-title">COBRAR CON:</div><button class="btn cash" onclick="chargeOrder('${o.id}','efectivo')">💵 EFECTIVO</button><button class="btn cardpay" onclick="chargeOrder('${o.id}','tarjeta')">💳 TARJETA</button><button class="btn transfer" onclick="chargeOrder('${o.id}','transferencia')">📲 TRANSFERENCIA</button>`;
@@ -257,7 +258,7 @@ function orderCard(o,isMine){
 
 function render(){
   const newOnes=orders.filter(o=>o.estado==='nuevo'&&!o.mesero_id);
-  const mine=orders.filter(o=>o.mesero_id===waiter.id && o.estado!=='cobrado');
+  const mine=orders.filter(o=>o.mesero_id===waiter.id && !['cobrado','cancelado'].includes(o.estado));
   $('newCount').textContent=newOnes.length;
   $('mineCount').textContent=mine.length;
   $('requestCount').textContent=tableRequests.length;
@@ -276,6 +277,14 @@ async function acceptOrder(id){
 async function setOrderState(id,state){
   const {error}=await sb.from('pedidos').update({estado:state,updated_at:new Date().toISOString()}).eq('id',id).eq('mesero_id',waiter.id);
   if(error)return alert('No se pudo actualizar: '+error.message);
+  await refreshAll(false);
+}
+async function cancelOrder(id){
+  const reason=prompt('Motivo de cancelación:');
+  if(reason===null)return;
+  if(!confirm('¿Cancelar el pedido y devolver sus existencias al inventario?'))return;
+  const {error}=await sb.rpc('cancelar_pedido_restaurante',{p_pedido_id:id,p_motivo:reason});
+  if(error)return alert('No se pudo cancelar: '+error.message);
   await refreshAll(false);
 }
 async function chargeOrder(id,method){

@@ -8,6 +8,13 @@ alter table public.products drop constraint if exists products_stock_nonnegative
 alter table public.products add constraint products_stock_nonnegative check (stock is null or stock >= 0);
 alter table public.products drop constraint if exists products_low_stock_nonnegative;
 alter table public.products add constraint products_low_stock_nonnegative check (low_stock_threshold >= 0);
+alter table public.pedido_items add column if not exists product_id uuid references public.products(id);
+alter table public.pedidos add column if not exists cancelado_at timestamptz;
+alter table public.pedidos add column if not exists motivo_cancelacion text;
+alter table public.pedidos add column if not exists cancelado_por uuid;
+alter table public.pedidos add column if not exists inventario_repuesto boolean default false;
+alter table public.pedidos drop constraint if exists pedidos_estado_check;
+alter table public.pedidos add constraint pedidos_estado_check check (estado in ('nuevo','aceptado','en_preparacion','listo','entregado','cobrado','cancelado'));
 
 -- Guardado específico de inventario para el propietario o administrador.
 create or replace function public.actualizar_inventario_producto(
@@ -139,9 +146,10 @@ begin
      where p.id = v_product_id and c.restaurant_id = p_restaurant_id;
 
     insert into public.pedido_items (
-      pedido_id, producto, cantidad, precio
+      pedido_id, product_id, producto, cantidad, precio
     ) values (
       v_pedido_id,
+      v_product_id,
       left(v_producto, 160),
       v_cantidad,
       v_precio
@@ -172,6 +180,7 @@ as $$
     'id', id,
     'numero_mesa', numero_mesa,
     'estado', estado,
+    'motivo_cancelacion', motivo_cancelacion,
     'updated_at', updated_at
   )
   from public.pedidos
@@ -233,6 +242,27 @@ $$;
 
 revoke all on function public.registrar_solicitud_cliente(uuid,text) from public;
 grant execute on function public.registrar_solicitud_cliente(uuid,text) to anon, authenticated;
+
+-- Cancela pedidos antes de preparación y devuelve inventario una sola vez.
+create or replace function public.cancelar_pedido_restaurante(p_pedido_id uuid,p_motivo text)
+returns void language plpgsql security definer set search_path=public as $$
+declare v_restaurant_id uuid;v_estado text;v_mesero_id uuid;v_actor_id uuid;v_ya_repuesto boolean;v_item record;
+begin
+ select p.restaurant_id,p.estado,p.mesero_id,coalesce(p.inventario_repuesto,false)
+ into v_restaurant_id,v_estado,v_mesero_id,v_ya_repuesto from public.pedidos p where p.id=p_pedido_id for update;
+ select m.id into v_actor_id from public.meseros m where m.user_id=auth.uid() and m.restaurant_id=v_restaurant_id and m.activo=true and m.rol in ('mesero','admin') limit 1;
+ if v_actor_id is null then raise exception 'No tienes permiso para cancelar este pedido';end if;
+ if v_estado not in ('nuevo','aceptado') then raise exception 'El pedido ya no puede cancelarse';end if;
+ if v_estado='aceptado' and v_mesero_id is distinct from v_actor_id and not exists(select 1 from public.meseros where id=v_actor_id and rol='admin') then raise exception 'Este pedido pertenece a otro mesero';end if;
+ if not v_ya_repuesto then
+  for v_item in select product_id,cantidad from public.pedido_items where pedido_id=p_pedido_id and product_id is not null loop
+   update public.products set stock=case when stock is null then null else stock+v_item.cantidad end,available=case when stock is null then available else true end where id=v_item.product_id;
+  end loop;
+ end if;
+ update public.pedidos set estado='cancelado',cancelado_at=now(),cancelado_por=v_actor_id,motivo_cancelacion=left(coalesce(nullif(btrim(p_motivo),''),'Sin motivo'),300),inventario_repuesto=true,updated_at=now() where id=p_pedido_id;
+end;$$;
+revoke all on function public.cancelar_pedido_restaurante(uuid,text) from public;
+grant execute on function public.cancelar_pedido_restaurante(uuid,text) to authenticated;
 
 -- Datos para caja y formas de pago.
 alter table public.pedidos add column if not exists forma_pago text;

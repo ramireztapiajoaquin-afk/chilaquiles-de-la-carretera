@@ -174,15 +174,20 @@ function setOrderStatus(message,type=""){
 function renderOrderTracking(order){
   const panel=document.getElementById('orderTracking');
   const state=order?.estado||'nuevo';
+  const cancelled=state==='cancelado';
+  panel.classList.toggle('cancelled',cancelled);
   const current=Math.max(0,orderSteps.findIndex(([key])=>key===state));
   const isPaid=state==='cobrado';
   panel.dataset.orderId=order.id;
   document.getElementById('trackingTable').textContent=`Mesa ${order.numero_mesa}`;
   document.getElementById('trackingFolio').textContent=`Folio ${String(order.id).slice(0,8).toUpperCase()}`;
-  document.getElementById('trackingSteps').innerHTML=orderSteps.map(([key,label],index)=>`
+  document.getElementById('trackingSteps').innerHTML=cancelled
+    ? `<div class="cancelled-message"><b>✕ PEDIDO CANCELADO</b><span>${eh(order.motivo_cancelacion||'Consulta con el mesero.')}</span></div>`
+    : orderSteps.map(([key,label],index)=>`
     <div class="tracking-step ${index<current||isPaid?'done':index===current?'current':''}">
       <span>${index<current||isPaid?'✓':index===current?'●':''}</span><b>${label}</b>
     </div>`).join('');
+  document.querySelector('.service-actions')?.classList.toggle('hidden',cancelled);
   panel.classList.remove('hidden');
 }
 async function refreshOrderTracking(orderId){
@@ -191,7 +196,7 @@ async function refreshOrderTracking(orderId){
     const {data,error}=await sb.rpc('consultar_estado_pedido_cliente',{p_pedido_id:orderId});
     if(error||!data)return;
     renderOrderTracking(data);
-    if(data.estado==='cobrado'){
+    if(['cobrado','cancelado'].includes(data.estado)){
       sessionStorage.removeItem('activeOrderId');
       clearInterval(trackingTimer);
       trackingTimer=null;

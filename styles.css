@@ -424,6 +424,7 @@ button,input{font:inherit} button{cursor:pointer}.hidden{display:none!important}
 .service-btn:disabled{opacity:.6;cursor:wait}
 .service-status{min-height:18px;margin-top:8px;text-align:center;font-size:12px;font-weight:850}
 .service-status.loading{color:#735c13}.service-status.success{color:#14723c}.service-status.error{color:#b21f18}
+.order-tracking.cancelled{border-color:#d95345;background:#fff5f3}.cancelled-message{display:grid;gap:6px;padding:18px 10px;text-align:center;color:#a5231b}.cancelled-message b{font-size:18px}.cancelled-message span{font-size:13px;color:#6e504c}
 @media(max-width:600px){.order-tracking{right:10px;bottom:10px;width:calc(100vw - 20px);max-height:70vh;overflow:auto}}
 .whatsapp-send{
   width:100%;
