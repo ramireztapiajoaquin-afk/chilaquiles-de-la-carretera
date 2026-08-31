@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Panel de Meseros · Chilaquiles de la Carretera</title>
+  <style>
+    :root{
+      --green:#197a45;
+      --green2:#0f5f34;
+      --yellow:#f4c542;
+      --red:#c93b2f;
+      --bg:#f4f5f3;
+      --card:#fff;
+      --text:#20231f;
+      --muted:#71766f;
+      --line:#e1e5df;
+      --shadow:0 10px 30px rgba(0,0,0,.08);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+    button,input{font:inherit}
+    .hidden{display:none!important}
+    .login{min-height:100vh;display:grid;place-items:center;padding:24px;background:linear-gradient(150deg,#0f5f34,#197a45 55%,#f4c542)}
+    .login-card{width:min(430px,100%);background:#fff;border-radius:24px;padding:28px;box-shadow:0 24px 70px rgba(0,0,0,.24)}
+    .login-logo{font-size:44px;text-align:center}
+    .login h1{margin:8px 0 0;text-align:center;font-size:28px}
+    .login p{text-align:center;color:var(--muted);margin:5px 0 24px}
+    .field{width:100%;padding:15px 16px;border:1px solid var(--line);border-radius:14px;margin:7px 0;background:#fafbfa}
+    .btn{border:0;border-radius:14px;padding:14px 17px;font-weight:800;cursor:pointer}
+    .btn-primary{background:var(--green);color:#fff;width:100%;margin-top:10px}
+    .status{margin-top:12px;padding:11px 12px;border-radius:12px;font-size:14px}
+    .status.err{background:#ffe5e2;color:#8b2019}.status.ok{background:#e7f7ed;color:#17643a}
+    .topbar{position:sticky;top:0;z-index:20;background:#111;color:#fff;padding:12px 14px;box-shadow:0 4px 18px rgba(0,0,0,.18)}
+    .topbar-inner{max-width:1100px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand strong{display:block;font-size:18px}.brand small{color:#d8ddd7}
+    .user{text-align:right;font-size:13px}.user strong{display:block;color:var(--yellow)}
+    .logout{background:#2d322f;color:#fff;border:1px solid #555;padding:9px 12px;border-radius:11px;margin-left:8px}
+    .wrap{max-width:1100px;margin:0 auto;padding:16px 14px 90px}
+    .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:4px 0 16px}
+    .summary-card{background:#fff;border-radius:18px;padding:14px;box-shadow:var(--shadow);border:1px solid var(--line)}
+    .summary-card b{font-size:25px;display:block}.summary-card span{font-size:12px;color:var(--muted);font-weight:700}
+    .section-title{display:flex;align-items:center;justify-content:space-between;margin:21px 2px 10px}
+    .section-title h2{margin:0;font-size:20px}.badge{background:#111;color:#fff;padding:5px 10px;border-radius:999px;font-size:12px}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .order{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+    .order.new{border-left:7px solid var(--yellow)}
+    .order.late{border-left:7px solid var(--red)}
+    .order.mine{border-left:7px solid var(--green)}
+    .order-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+    .table-no{font-size:25px;font-weight:900}.timer{font-weight:900;padding:6px 9px;border-radius:10px;background:#f2f3f0}
+    .late .timer{background:#ffe3df;color:#9a231b}
+    .meta{font-size:13px;color:var(--muted);margin-top:3px}
+    .items{margin:14px 0 10px;padding:0;list-style:none;border-top:1px dashed var(--line)}
+    .items li{padding:9px 0;border-bottom:1px dashed var(--line);display:flex;justify-content:space-between;gap:10px}
+    .notes{background:#fff6cf;border-radius:12px;padding:10px 12px;margin:10px 0;font-size:14px}
+    .total{display:flex;justify-content:space-between;font-size:18px;font-weight:900;margin:12px 0}
+    .actions{display:flex;gap:8px;flex-wrap:wrap}
+    .actions .btn{flex:1;min-width:120px}
+    .accept{background:var(--green);color:#fff}
+    .prep{background:#e6f2ff;color:#12568b}.ready{background:var(--yellow);color:#3f3500}.delivered{background:#e8f7ed;color:#17643a}.paid{background:#111;color:#fff}
+    .request{background:#fff;border:1px solid var(--line);border-radius:18px;padding:15px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:var(--shadow);margin-bottom:10px}
+    .request strong{font-size:18px}.request small{display:block;color:var(--muted);margin-top:3px}
+    .request .btn{background:var(--red);color:#fff;white-space:nowrap}
+    .empty{background:#fff;border:1px dashed #cfd4cd;border-radius:18px;padding:26px;text-align:center;color:var(--muted)}
+    .connection{position:fixed;left:12px;bottom:12px;background:#111;color:#fff;padding:7px 10px;border-radius:999px;font-size:12px;z-index:30}
+    .connection.live{background:var(--green)}
+    @media(max-width:760px){
+      .grid{grid-template-columns:1fr}.summary{grid-template-columns:repeat(3,1fr)}
+      .summary-card{padding:11px}.summary-card b{font-size:21px}.summary-card span{font-size:10px}
+      .brand small{display:none}.user span{display:none}.table-no{font-size:23px}
+    }
+  </style>
+</head>
+<body>
+
+<div id="loginView" class="login">
+  <div class="login-card">
+    <div class="login-logo">🌶️</div>
+    <h1>Panel de Meseros</h1>
+    <p>Chilaquiles de la Carretera</p>
+    <input id="email" class="field" type="email" autocomplete="username" placeholder="Correo del mesero">
+    <input id="password" class="field" type="password" autocomplete="current-password" placeholder="Contraseña">
+    <button id="loginBtn" class="btn btn-primary" type="button">ENTRAR</button>
+    <div id="loginStatus"></div>
+  </div>
+</div>
+
+<div id="appView" class="hidden">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand"><strong>🌶️ Chilaquiles de la Carretera</strong><small>Panel de meseros · pedidos en tiempo real</small></div>
+      <div class="user"><strong id="waiterName">Mesero</strong><span id="waiterEmail"></span><button id="logoutBtn" class="logout" type="button">Salir</button></div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="summary">
+      <div class="summary-card"><b id="newCount">0</b><span>PEDIDOS NUEVOS</span></div>
+      <div class="summary-card"><b id="mineCount">0</b><span>MIS PEDIDOS</span></div>
+      <div class="summary-card"><b id="requestCount">0</b><span>SOLICITUDES</span></div>
+    </div>
+
+    <div class="section-title"><h2>🔔 Pedidos nuevos</h2><span class="badge">Tiempo real</span></div>
+    <div id="newOrders" class="grid"></div>
+
+    <div class="section-title"><h2>👤 Mis pedidos</h2></div>
+    <div id="myOrders" class="grid"></div>
+
+    <div class="section-title"><h2>🛎️ Solicitudes de mesas</h2></div>
+    <div id="requests"></div>
+  </main>
+</div>
+
+<div id="connection" class="connection">Conectando…</div>
+
+<script src="config.js?v=13"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="shared.js?v=13"></script>
+<script>
+let sb=null;
+let waiter=null;
+let restaurant=null;
+let orders=[];
+let orderItems=[];
+let tableRequests=[];
+let realtimeChannel=null;
+let audioReady=false;
+
+const $=id=>document.getElementById(id);
+const html=s=>eh(s);
+
+function showStatus(text,ok=false){
+  $('loginStatus').innerHTML=`<div class="status ${ok?'ok':'err'}">${html(text)}</div>`;
+}
+function money2(v){return '$'+Number(v||0).toFixed(0)}
+function elapsed(iso){
+  const ms=Math.max(0,Date.now()-new Date(iso).getTime());
+  const m=Math.floor(ms/60000),s=Math.floor((ms%60000)/1000);
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+function ageMinutes(iso){return Math.floor(Math.max(0,Date.now()-new Date(iso).getTime())/60000)}
+function localTime(iso){return new Date(iso).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'})}
+
+function enableAudio(){
+  audioReady=true;
+  try{
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(AC){const c=new AC();const o=c.createOscillator();const g=c.createGain();g.gain.value=.0001;o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+.02);}
+  }catch(e){}
+}
+function alertSound(){
+  if(!audioReady)return;
+  try{
+    const AC=window.AudioContext||window.webkitAudioContext;
+    const c=new AC();
+    const o=c.createOscillator();const g=c.createGain();
+    o.type='sine';o.frequency.setValueAtTime(880,c.currentTime);o.frequency.setValueAtTime(660,c.currentTime+.13);
+    g.gain.setValueAtTime(.0001,c.currentTime);g.gain.exponentialRampToValueAtTime(.12,c.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+.32);
+    o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+.34);
+  }catch(e){}
+  if(navigator.vibrate) navigator.vibrate([120,70,120]);
+}
+
+async function doLogin(){
+  enableAudio();
+  const email=$('email').value.trim();
+  const password=$('password').value;
+  if(!email||!password)return showStatus('Escribe correo y contraseña.');
+  $('loginBtn').disabled=true;
+  const {error}=await sb.auth.signInWithPassword({email,password});
+  $('loginBtn').disabled=false;
+  if(error)return showStatus('No se pudo iniciar sesión: '+error.message);
+  await enterApp();
+}
+
+async function enterApp(){
+  const {data:{user}}=await sb.auth.getUser();
+  if(!user)return;
+  const {data:m,error}=await sb.from('meseros').select('*').eq('user_id',user.id).eq('activo',true).maybeSingle();
+  if(error||!m){
+    await sb.auth.signOut();
+    return showStatus('Este usuario no está registrado como mesero activo.');
+  }
+  waiter=m;
+  const {data:r}=await sb.from('restaurants').select('*').eq('id',waiter.restaurant_id).maybeSingle();
+  restaurant=r||{id:waiter.restaurant_id,name:'Chilaquiles de la Carretera'};
+  $('waiterName').textContent=waiter.nombre||'Mesero';
+  $('waiterEmail').textContent=user.email||'';
+  $('loginView').classList.add('hidden');
+  $('appView').classList.remove('hidden');
+  await refreshAll(false);
+  subscribeRealtime();
+}
+
+async function refreshAll(playAlert=false){
+  if(!waiter)return;
+  const previousNew=new Set(orders.filter(o=>o.estado==='nuevo'&&!o.mesero_id).map(o=>o.id));
+
+  const {data:o,error:oe}=await sb.from('pedidos')
+    .select('*')
+    .eq('restaurant_id',waiter.restaurant_id)
+    .neq('estado','cobrado')
+    .order('created_at',{ascending:true});
+  if(oe){console.error(oe);return;}
+  orders=o||[];
+
+  const ids=orders.map(x=>x.id);
+  orderItems=[];
+  if(ids.length){
+    const {data:i}=await sb.from('pedido_items').select('*').in('pedido_id',ids).order('created_at');
+    orderItems=i||[];
+  }
+
+  const {data:req}=await sb.from('solicitudes_mesa')
+    .select('*')
+    .eq('restaurant_id',waiter.restaurant_id)
+    .eq('estado','nueva')
+    .order('created_at',{ascending:true});
+  tableRequests=req||[];
+
+  if(playAlert){
+    const nowNew=orders.filter(o=>o.estado==='nuevo'&&!o.mesero_id);
+    if(nowNew.some(o=>!previousNew.has(o.id))) alertSound();
+  }
+  render();
+}
+
+function itemsFor(orderId){return orderItems.filter(i=>i.pedido_id===orderId)}
+function orderCard(o,isMine){
+  const mins=ageMinutes(o.created_at);
+  const cls=`order ${isMine?'mine':(mins>=20?'late':'new')}`;
+  const items=itemsFor(o.id);
+  const itemHtml=items.length?items.map(i=>`<li><span><b>${Number(i.cantidad||1)}×</b> ${html(i.producto)}</span><b>${money2(Number(i.precio||0)*Number(i.cantidad||1))}</b></li>`).join(''):'<li><span>Cargando productos…</span></li>';
+  let actions='';
+  if(!isMine){
+    actions=`<button class="btn accept" onclick="acceptOrder('${o.id}')">ACEPTAR PEDIDO</button>`;
+  }else{
+    if(o.estado==='aceptado') actions=`<button class="btn prep" onclick="setOrderState('${o.id}','en_preparacion')">EN PREPARACIÓN</button>`;
+    else if(o.estado==='en_preparacion') actions=`<button class="btn ready" onclick="setOrderState('${o.id}','listo')">MARCAR LISTO</button>`;
+    else if(o.estado==='listo') actions=`<button class="btn delivered" onclick="setOrderState('${o.id}','entregado')">ENTREGADO</button>`;
+    else if(o.estado==='entregado') actions=`<button class="btn paid" onclick="setOrderState('${o.id}','cobrado')">COBRADO</button>`;
+  }
+  return `<article class="${cls}">
+    <div class="order-head"><div><div class="table-no">MESA ${html(o.numero_mesa)}</div><div class="meta">${localTime(o.created_at)} · ${html(String(o.estado||'nuevo').replaceAll('_',' ').toUpperCase())}</div></div><div class="timer" data-created="${html(o.created_at)}">${elapsed(o.created_at)}</div></div>
+    <ul class="items">${itemHtml}</ul>
+    ${o.observaciones?`<div class="notes"><b>Indicaciones:</b> ${html(o.observaciones)}</div>`:''}
+    <div class="total"><span>TOTAL</span><span>${money2(o.total)}</span></div>
+    <div class="actions">${actions}</div>
+  </article>`;
+}
+
+function render(){
+  const newOnes=orders.filter(o=>o.estado==='nuevo'&&!o.mesero_id);
+  const mine=orders.filter(o=>o.mesero_id===waiter.id && o.estado!=='cobrado');
+  $('newCount').textContent=newOnes.length;
+  $('mineCount').textContent=mine.length;
+  $('requestCount').textContent=tableRequests.length;
+  $('newOrders').innerHTML=newOnes.length?newOnes.map(o=>orderCard(o,false)).join(''):'<div class="empty">No hay pedidos nuevos.</div>';
+  $('myOrders').innerHTML=mine.length?mine.map(o=>orderCard(o,true)).join(''):'<div class="empty">Todavía no tienes pedidos asignados.</div>';
+  $('requests').innerHTML=tableRequests.length?tableRequests.map(r=>`<div class="request"><div><strong>${r.tipo==='pedir_cuenta'?'💳':'🔔'} MESA ${html(r.numero_mesa)}</strong><small>${r.tipo==='pedir_cuenta'?'Solicita la cuenta':'Solicita mesero'} · ${elapsed(r.created_at)}</small></div><button class="btn" onclick="attendRequest('${r.id}')">ATENDER</button></div>`).join(''):'<div class="empty">No hay solicitudes pendientes.</div>';
+}
+
+async function acceptOrder(id){
+  const {data,error}=await sb.from('pedidos').update({mesero_id:waiter.id,estado:'aceptado',updated_at:new Date().toISOString()})
+    .eq('id',id).is('mesero_id',null).eq('estado','nuevo').select('id');
+  if(error)return alert('No se pudo aceptar: '+error.message);
+  if(!data?.length)return alert('Otro mesero ya tomó este pedido.');
+  await refreshAll(false);
+}
+async function setOrderState(id,state){
+  const {error}=await sb.from('pedidos').update({estado:state,updated_at:new Date().toISOString()}).eq('id',id).eq('mesero_id',waiter.id);
+  if(error)return alert('No se pudo actualizar: '+error.message);
+  await refreshAll(false);
+}
+async function attendRequest(id){
+  const {error}=await sb.from('solicitudes_mesa').update({estado:'atendida',mesero_id:waiter.id}).eq('id',id).eq('estado','nueva');
+  if(error)return alert('No se pudo atender: '+error.message);
+  await refreshAll(false);
+}
+
+function subscribeRealtime(){
+  if(realtimeChannel) sb.removeChannel(realtimeChannel);
+  realtimeChannel=sb.channel('meseros-'+waiter.restaurant_id)
+    .on('postgres_changes',{event:'*',schema:'public',table:'pedidos',filter:`restaurant_id=eq.${waiter.restaurant_id}`},()=>refreshAll(true))
+    .on('postgres_changes',{event:'*',schema:'public',table:'pedido_items'},()=>refreshAll(false))
+    .on('postgres_changes',{event:'*',schema:'public',table:'solicitudes_mesa',filter:`restaurant_id=eq.${waiter.restaurant_id}`},()=>{alertSound();refreshAll(false)})
+    .subscribe(status=>{
+      $('connection').textContent=status==='SUBSCRIBED'?'● En tiempo real':'Conectando…';
+      $('connection').classList.toggle('live',status==='SUBSCRIBED');
+    });
+}
+
+async function logout(){
+  if(realtimeChannel) await sb.removeChannel(realtimeChannel);
+  await sb.auth.signOut();
+  location.reload();
+}
+
+async function boot(){
+  if(!cfgReady())return showStatus('La configuración de Supabase está incompleta.');
+  sb=makeClient();
+  $('loginBtn').addEventListener('click',doLogin);
+  $('password').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+  $('logoutBtn').addEventListener('click',logout);
+  document.addEventListener('pointerdown',enableAudio,{once:true});
+  const {data:{session}}=await sb.auth.getSession();
+  if(session) await enterApp();
+}
+
+setInterval(()=>{
+  document.querySelectorAll('[data-created]').forEach(el=>el.textContent=elapsed(el.dataset.created));
+  document.querySelectorAll('.order').forEach(card=>{});
+},1000);
+
+boot();
+</script>
+</body>
+</html>
