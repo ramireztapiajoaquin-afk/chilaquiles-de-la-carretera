@@ -91,6 +91,16 @@ function setupPremiumCover(r){
 let cart=[];
 let currentRestaurant=null;
 let ordering=false;
+let trackingTimer=null;
+
+const orderSteps=[
+  ['nuevo','Pedido recibido'],
+  ['aceptado','Aceptado por el mesero'],
+  ['en_preparacion','En preparación'],
+  ['listo','Listo para entregar'],
+  ['entregado','Entregado'],
+  ['cobrado','Cobrado']
+];
 
 function parsePriceForCart(value){
   const m=String(value??"").replace(",",".").match(/(\d+(?:\.\d+)?)/);
@@ -146,6 +156,40 @@ function setOrderStatus(message,type=""){
   box.textContent=message;
   box.className=`order-status ${type}`.trim();
 }
+function renderOrderTracking(order){
+  const panel=document.getElementById('orderTracking');
+  const state=order?.estado||'nuevo';
+  const current=Math.max(0,orderSteps.findIndex(([key])=>key===state));
+  document.getElementById('trackingTable').textContent=`Mesa ${order.numero_mesa}`;
+  document.getElementById('trackingFolio').textContent=`Folio ${String(order.id).slice(0,8).toUpperCase()}`;
+  document.getElementById('trackingSteps').innerHTML=orderSteps.map(([key,label],index)=>`
+    <div class="tracking-step ${index<current?'done':index===current?'current':''}">
+      <span>${index<current?'✓':index===current?'●':''}</span><b>${label}</b>
+    </div>`).join('');
+  panel.classList.remove('hidden');
+}
+async function refreshOrderTracking(orderId){
+  try{
+    const sb=makeClient();
+    const {data,error}=await sb.rpc('consultar_estado_pedido_cliente',{p_pedido_id:orderId});
+    if(error||!data)return;
+    renderOrderTracking(data);
+    if(data.estado==='cobrado'){
+      sessionStorage.removeItem('activeOrderId');
+      clearInterval(trackingTimer);
+      trackingTimer=null;
+    }
+  }catch(error){console.error(error)}
+}
+function startOrderTracking(orderId){
+  sessionStorage.setItem('activeOrderId',orderId);
+  if(trackingTimer)clearInterval(trackingTimer);
+  refreshOrderTracking(orderId);
+  trackingTimer=setInterval(()=>refreshOrderTracking(orderId),4000);
+}
+function closeOrderTracking(){
+  document.getElementById('orderTracking').classList.add('hidden');
+}
 async function confirmOrder(){
   if(ordering)return;
   if(!cart.length){alert("Agrega al menos un producto.");return}
@@ -186,6 +230,7 @@ async function confirmOrder(){
     updateCartUI();
     document.getElementById("cartNotes").value="";
     setOrderStatus(`✅ Pedido confirmado. Folio ${String(data).slice(0,8).toUpperCase()}. El mesero ya fue notificado.`,"success");
+    startOrderTracking(data);
     button.textContent="PEDIDO CONFIRMADO";
     setTimeout(()=>closeCart(),2600);
   }catch(error){
@@ -396,6 +441,8 @@ async function load(){
  setupPremiumCover(r);
  setupBackgroundMusic(r);
  setupVoiceOver(r);
+ const savedOrder=sessionStorage.getItem('activeOrderId');
+ if(savedOrder)startOrderTracking(savedOrder);
 }
 load();
 </script>
@@ -421,5 +468,14 @@ load();
     <button class="whatsapp-send" onclick="sendWhatsApp()">📲 Enviar pedido por WhatsApp</button>
   </div>
 </div>
+
+<aside id="orderTracking" class="order-tracking hidden" aria-live="polite">
+  <div class="tracking-head">
+    <div><strong id="trackingTable">Mesa</strong><small id="trackingFolio">Folio</small></div>
+    <button type="button" onclick="closeOrderTracking()" aria-label="Cerrar">×</button>
+  </div>
+  <h3>Estado de tu pedido</h3>
+  <div id="trackingSteps" class="tracking-steps"></div>
+</aside>
 
 </body></html>

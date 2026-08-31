@@ -102,3 +102,24 @@ $$;
 
 revoke all on function public.confirmar_pedido_cliente(uuid,text,text,jsonb) from public;
 grant execute on function public.confirmar_pedido_cliente(uuid,text,text,jsonb) to anon, authenticated;
+
+-- Permite que el cliente consulte únicamente el pedido cuyo folio conoce.
+create or replace function public.consultar_estado_pedido_cliente(p_pedido_id uuid)
+returns jsonb
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select jsonb_build_object(
+    'id', id,
+    'numero_mesa', numero_mesa,
+    'estado', estado,
+    'updated_at', updated_at
+  )
+  from public.pedidos
+  where id = p_pedido_id;
+$$;
+
+revoke all on function public.consultar_estado_pedido_cliente(uuid) from public;
+grant execute on function public.consultar_estado_pedido_cliente(uuid) to anon, authenticated;
