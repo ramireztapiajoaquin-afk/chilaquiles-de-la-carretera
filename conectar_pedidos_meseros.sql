@@ -176,3 +176,11 @@ $$;
 
 revoke all on function public.registrar_solicitud_cliente(uuid,text) from public;
 grant execute on function public.registrar_solicitud_cliente(uuid,text) to anon, authenticated;
+
+-- Datos para caja y formas de pago.
+alter table public.pedidos add column if not exists forma_pago text;
+alter table public.pedidos add column if not exists cobrado_at timestamptz;
+
+alter table public.pedidos drop constraint if exists pedidos_forma_pago_check;
+alter table public.pedidos add constraint pedidos_forma_pago_check
+  check (forma_pago is null or forma_pago in ('efectivo','tarjeta','transferencia'));

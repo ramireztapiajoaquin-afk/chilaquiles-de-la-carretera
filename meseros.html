@@ -59,6 +59,7 @@
     .actions .btn{flex:1;min-width:120px}
     .accept{background:var(--green);color:#fff}
     .prep{background:#e6f2ff;color:#12568b}.ready{background:var(--yellow);color:#3f3500}.delivered{background:#e8f7ed;color:#17643a}.paid{background:#111;color:#fff}
+    .payment-title{width:100%;font-size:12px;color:var(--muted);font-weight:900;text-align:center}.cash{background:#167344;color:#fff}.cardpay{background:#155a91;color:#fff}.transfer{background:#6a3b94;color:#fff}
     .request{background:#fff;border:1px solid var(--line);border-radius:18px;padding:15px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:var(--shadow);margin-bottom:10px}
     .request strong{font-size:18px}.request small{display:block;color:var(--muted);margin-top:3px}
     .request .btn{background:var(--red);color:#fff;white-space:nowrap}
@@ -239,7 +240,7 @@ function orderCard(o,isMine){
     if(o.estado==='aceptado') actions=`<button class="btn prep" onclick="setOrderState('${o.id}','en_preparacion')">EN PREPARACIÓN</button>`;
     else if(o.estado==='en_preparacion') actions=`<button class="btn ready" onclick="setOrderState('${o.id}','listo')">MARCAR LISTO</button>`;
     else if(o.estado==='listo') actions=`<button class="btn delivered" onclick="setOrderState('${o.id}','entregado')">ENTREGADO</button>`;
-    else if(o.estado==='entregado') actions=`<button class="btn paid" onclick="setOrderState('${o.id}','cobrado')">COBRADO</button>`;
+    else if(o.estado==='entregado') actions=`<div class="payment-title">COBRAR CON:</div><button class="btn cash" onclick="chargeOrder('${o.id}','efectivo')">💵 EFECTIVO</button><button class="btn cardpay" onclick="chargeOrder('${o.id}','tarjeta')">💳 TARJETA</button><button class="btn transfer" onclick="chargeOrder('${o.id}','transferencia')">📲 TRANSFERENCIA</button>`;
   }
   return `<article class="${cls}">
     <div class="order-head"><div><div class="table-no">MESA ${html(o.numero_mesa)}</div><div class="meta">${localTime(o.created_at)} · ${html(String(o.estado||'nuevo').replaceAll('_',' ').toUpperCase())}</div></div><div class="timer" data-created="${html(o.created_at)}">${elapsed(o.created_at)}</div></div>
@@ -271,6 +272,13 @@ async function acceptOrder(id){
 async function setOrderState(id,state){
   const {error}=await sb.from('pedidos').update({estado:state,updated_at:new Date().toISOString()}).eq('id',id).eq('mesero_id',waiter.id);
   if(error)return alert('No se pudo actualizar: '+error.message);
+  await refreshAll(false);
+}
+async function chargeOrder(id,method){
+  if(!confirm(`¿Confirmar cobro por ${method.toUpperCase()}?`))return;
+  const now=new Date().toISOString();
+  const {error}=await sb.from('pedidos').update({estado:'cobrado',forma_pago:method,cobrado_at:now,updated_at:now}).eq('id',id).eq('mesero_id',waiter.id).eq('estado','entregado');
+  if(error)return alert('No se pudo registrar el cobro: '+error.message);
   await refreshAll(false);
 }
 async function attendRequest(id){
