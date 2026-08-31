@@ -410,6 +410,13 @@ button,input{font:inherit} button{cursor:pointer}.hidden{display:none!important}
 .tracking-step span{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:#e9e3da;color:#fff;font-size:12px}
 .tracking-step.done{color:#276b43}.tracking-step.done span{background:#2f9b61}
 .tracking-step.current{color:#a71912}.tracking-step.current span{background:#d53325;box-shadow:0 0 0 5px rgba(213,51,37,.13)}
+.service-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid #eadfc9}
+.service-btn{border:0;border-radius:11px;padding:11px 8px;color:#fff;font-size:12px;font-weight:950;cursor:pointer}
+.service-btn.waiter{background:linear-gradient(135deg,#d96a15,#a43b0d)}
+.service-btn.bill{background:linear-gradient(135deg,#257956,#15533a)}
+.service-btn:disabled{opacity:.6;cursor:wait}
+.service-status{min-height:18px;margin-top:8px;text-align:center;font-size:12px;font-weight:850}
+.service-status.loading{color:#735c13}.service-status.success{color:#14723c}.service-status.error{color:#b21f18}
 @media(max-width:600px){.order-tracking{right:10px;bottom:10px;width:calc(100vw - 20px);max-height:70vh;overflow:auto}}
 .whatsapp-send{
   width:100%;

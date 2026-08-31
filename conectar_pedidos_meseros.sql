@@ -123,3 +123,56 @@ $$;
 
 revoke all on function public.consultar_estado_pedido_cliente(uuid) from public;
 grant execute on function public.consultar_estado_pedido_cliente(uuid) to anon, authenticated;
+
+-- Registra una solicitud del cliente y evita avisos duplicados pendientes.
+create or replace function public.registrar_solicitud_cliente(
+  p_pedido_id uuid,
+  p_tipo text
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_restaurant_id uuid;
+  v_numero_mesa text;
+  v_solicitud_id uuid;
+begin
+  if p_tipo not in ('llamar_mesero','pedir_cuenta') then
+    raise exception 'Tipo de solicitud inválido';
+  end if;
+
+  select restaurant_id, numero_mesa
+    into v_restaurant_id, v_numero_mesa
+    from public.pedidos
+   where id = p_pedido_id
+     and estado <> 'cobrado';
+
+  if v_restaurant_id is null then
+    raise exception 'Pedido no disponible';
+  end if;
+
+  select id into v_solicitud_id
+    from public.solicitudes_mesa
+   where restaurant_id = v_restaurant_id
+     and numero_mesa::text = v_numero_mesa::text
+     and tipo = p_tipo
+     and estado = 'nueva'
+   order by created_at desc
+   limit 1;
+
+  if v_solicitud_id is null then
+    insert into public.solicitudes_mesa (
+      restaurant_id, numero_mesa, tipo, estado
+    ) values (
+      v_restaurant_id, v_numero_mesa, p_tipo, 'nueva'
+    ) returning id into v_solicitud_id;
+  end if;
+
+  return v_solicitud_id;
+end;
+$$;
+
+revoke all on function public.registrar_solicitud_cliente(uuid,text) from public;
+grant execute on function public.registrar_solicitud_cliente(uuid,text) to anon, authenticated;

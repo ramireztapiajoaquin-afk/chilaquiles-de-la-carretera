@@ -160,11 +160,13 @@ function renderOrderTracking(order){
   const panel=document.getElementById('orderTracking');
   const state=order?.estado||'nuevo';
   const current=Math.max(0,orderSteps.findIndex(([key])=>key===state));
+  const isPaid=state==='cobrado';
+  panel.dataset.orderId=order.id;
   document.getElementById('trackingTable').textContent=`Mesa ${order.numero_mesa}`;
   document.getElementById('trackingFolio').textContent=`Folio ${String(order.id).slice(0,8).toUpperCase()}`;
   document.getElementById('trackingSteps').innerHTML=orderSteps.map(([key,label],index)=>`
-    <div class="tracking-step ${index<current?'done':index===current?'current':''}">
-      <span>${index<current?'✓':index===current?'●':''}</span><b>${label}</b>
+    <div class="tracking-step ${index<current||isPaid?'done':index===current?'current':''}">
+      <span>${index<current||isPaid?'✓':index===current?'●':''}</span><b>${label}</b>
     </div>`).join('');
   panel.classList.remove('hidden');
 }
@@ -189,6 +191,31 @@ function startOrderTracking(orderId){
 }
 function closeOrderTracking(){
   document.getElementById('orderTracking').classList.add('hidden');
+}
+async function requestTableService(type){
+  const panel=document.getElementById('orderTracking');
+  const orderId=panel.dataset.orderId;
+  const statusBox=document.getElementById('serviceStatus');
+  if(!orderId)return;
+  const buttons=panel.querySelectorAll('.service-btn');
+  buttons.forEach(button=>button.disabled=true);
+  statusBox.textContent=type==='pedir_cuenta'?'Enviando solicitud de cuenta…':'Avisando al mesero…';
+  statusBox.className='service-status loading';
+  try{
+    const sb=makeClient();
+    const {error}=await sb.rpc('registrar_solicitud_cliente',{
+      p_pedido_id:orderId,p_tipo:type
+    });
+    if(error)throw error;
+    statusBox.textContent=type==='pedir_cuenta'?'✅ Cuenta solicitada. El mesero fue notificado.':'✅ Mesero solicitado. Ya recibió el aviso.';
+    statusBox.className='service-status success';
+  }catch(error){
+    console.error(error);
+    statusBox.textContent='No se pudo enviar la solicitud. Inténtalo nuevamente.';
+    statusBox.className='service-status error';
+  }finally{
+    buttons.forEach(button=>button.disabled=false);
+  }
 }
 async function confirmOrder(){
   if(ordering)return;
@@ -476,6 +503,11 @@ load();
   </div>
   <h3>Estado de tu pedido</h3>
   <div id="trackingSteps" class="tracking-steps"></div>
+  <div class="service-actions">
+    <button class="service-btn waiter" type="button" onclick="requestTableService('llamar_mesero')">🔔 LLAMAR AL MESERO</button>
+    <button class="service-btn bill" type="button" onclick="requestTableService('pedir_cuenta')">💳 PEDIR LA CUENTA</button>
+  </div>
+  <div id="serviceStatus" class="service-status" aria-live="polite"></div>
 </aside>
 
 </body></html>
