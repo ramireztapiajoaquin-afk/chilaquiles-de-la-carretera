@@ -184,3 +184,19 @@ alter table public.pedidos add column if not exists cobrado_at timestamptz;
 alter table public.pedidos drop constraint if exists pedidos_forma_pago_check;
 alter table public.pedidos add constraint pedidos_forma_pago_check
   check (forma_pago is null or forma_pago in ('efectivo','tarjeta','transferencia'));
+
+-- Accesos separados para Meseros, Cocina y Caja.
+alter table public.meseros add column if not exists rol text default 'mesero';
+update public.meseros set rol = 'mesero' where rol is null;
+alter table public.meseros drop constraint if exists meseros_rol_check;
+alter table public.meseros add constraint meseros_rol_check check (rol in ('mesero','cocina','caja','admin'));
+
+insert into public.meseros (user_id, restaurant_id, nombre, activo, rol)
+select 'ba92335a-d3bc-4932-bbf5-5ff18f4c1a0c'::uuid, r.id, 'Cocina', true, 'cocina' from public.restaurants r
+where r.slug='chilaquiles-de-la-carretera' and not exists (select 1 from public.meseros m where m.user_id='ba92335a-d3bc-4932-bbf5-5ff18f4c1a0c'::uuid);
+update public.meseros set restaurant_id=(select id from public.restaurants where slug='chilaquiles-de-la-carretera' limit 1),nombre='Cocina',activo=true,rol='cocina' where user_id='ba92335a-d3bc-4932-bbf5-5ff18f4c1a0c'::uuid;
+
+insert into public.meseros (user_id, restaurant_id, nombre, activo, rol)
+select 'ec72e93e-4dc7-490c-89a9-785d9ae11b59'::uuid, r.id, 'Caja', true, 'caja' from public.restaurants r
+where r.slug='chilaquiles-de-la-carretera' and not exists (select 1 from public.meseros m where m.user_id='ec72e93e-4dc7-490c-89a9-785d9ae11b59'::uuid);
+update public.meseros set restaurant_id=(select id from public.restaurants where slug='chilaquiles-de-la-carretera' limit 1),nombre='Caja',activo=true,rol='caja' where user_id='ec72e93e-4dc7-490c-89a9-785d9ae11b59'::uuid;

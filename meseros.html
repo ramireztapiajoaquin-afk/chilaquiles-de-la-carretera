@@ -183,6 +183,10 @@ async function enterApp(){
     await sb.auth.signOut();
     return showStatus('Este usuario no está registrado como mesero activo.');
   }
+  if(!['mesero','admin'].includes(m.rol||'mesero')){
+    await sb.auth.signOut();
+    return showStatus('Esta cuenta no tiene acceso al panel de meseros.');
+  }
   waiter=m;
   const {data:r}=await sb.from('restaurants').select('*').eq('id',waiter.restaurant_id).maybeSingle();
   restaurant=r||{id:waiter.restaurant_id,name:'Chilaquiles de la Carretera'};
