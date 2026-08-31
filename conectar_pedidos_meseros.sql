@@ -1,6 +1,14 @@
 -- Ejecutar una sola vez en Supabase > SQL Editor.
 -- Crea un punto de entrada seguro para que el menú público confirme pedidos.
 
+-- Inventario: stock nulo significa existencias ilimitadas.
+alter table public.products add column if not exists stock integer;
+alter table public.products add column if not exists low_stock_threshold integer default 5;
+alter table public.products drop constraint if exists products_stock_nonnegative;
+alter table public.products add constraint products_stock_nonnegative check (stock is null or stock >= 0);
+alter table public.products drop constraint if exists products_low_stock_nonnegative;
+alter table public.products add constraint products_low_stock_nonnegative check (low_stock_threshold >= 0);
+
 create or replace function public.confirmar_pedido_cliente(
   p_restaurant_id uuid,
   p_numero_mesa text,
@@ -20,6 +28,7 @@ declare
   v_cantidad integer;
   v_precio numeric;
   v_product_id uuid;
+  v_stock integer;
 begin
   if not exists (
     select 1 from public.restaurants
@@ -50,17 +59,22 @@ begin
            coalesce(
              nullif(regexp_replace(replace(coalesce(p.promo_price, ''), ',', '.'), '[^0-9.]', '', 'g'), ''),
              nullif(regexp_replace(replace(coalesce(p.price, ''), ',', '.'), '[^0-9.]', '', 'g'), '')
-           )::numeric
-      into v_producto, v_precio
+           )::numeric,
+           p.stock
+      into v_producto, v_precio, v_stock
       from public.products p
       join public.categories c on c.id = p.category_id
      where p.id = v_product_id
        and c.restaurant_id = p_restaurant_id
        and p.visible = true
-       and p.available = true;
+       and p.available = true
+     for update of p;
 
     if v_producto is null or v_cantidad < 1 or v_cantidad > 99 or v_precio is null or v_precio < 0 then
       raise exception 'Producto inválido';
+    end if;
+    if v_stock is not null and v_stock < v_cantidad then
+      raise exception 'Existencias insuficientes para %', v_producto;
     end if;
     v_total := v_total + (v_cantidad * v_precio);
   end loop;
@@ -76,6 +90,7 @@ begin
   for v_item in select value from jsonb_array_elements(p_items)
   loop
     v_product_id := (v_item->>'product_id')::uuid;
+    v_cantidad := (v_item->>'cantidad')::integer;
     select p.name,
            coalesce(
              nullif(regexp_replace(replace(coalesce(p.promo_price, ''), ',', '.'), '[^0-9.]', '', 'g'), ''),
@@ -91,9 +106,14 @@ begin
     ) values (
       v_pedido_id,
       left(v_producto, 160),
-      (v_item->>'cantidad')::integer,
+      v_cantidad,
       v_precio
     );
+
+    update public.products
+       set stock = case when stock is null then null else stock - v_cantidad end,
+           available = case when stock is null then available else (stock - v_cantidad) > 0 end
+     where id = v_product_id;
   end loop;
 
   return v_pedido_id;

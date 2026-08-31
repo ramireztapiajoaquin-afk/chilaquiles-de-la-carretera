@@ -100,6 +100,11 @@ function render(){
     <input type="text" value="${eh(p.name)}" oninput="editProd(${ci},${pi},'name',this.value)" placeholder="Producto">
     <input type="text" class="price-input" value="${eh(p.price)}" oninput="editProd(${ci},${pi},'price',this.value)" placeholder="Precio">
     <input type="text" class="promo-input" value="${eh(p.promo_price||"")}" oninput="editProd(${ci},${pi},'promo_price',this.value)" placeholder="Promo">
+    <div class="inventory-editor">
+      <label>Existencias<input type="number" min="0" step="1" value="${p.stock??''}" oninput="editProd(${ci},${pi},'stock',this.value===''?null:Math.max(0,parseInt(this.value)||0))" placeholder="Ilimitado"></label>
+      <label>Alerta mínima<input type="number" min="0" step="1" value="${p.low_stock_threshold??5}" oninput="editProd(${ci},${pi},'low_stock_threshold',Math.max(0,parseInt(this.value)||0))"></label>
+      <span class="stock-state ${p.stock===0?'out':p.stock!=null&&p.stock<=(p.low_stock_threshold??5)?'low':'ok'}">${p.stock==null?'∞ Sin control':p.stock===0?'AGOTADO':p.stock<=(p.low_stock_threshold??5)?'⚠ POCO STOCK':`${p.stock} disponibles`}</span>
+    </div>
     <div class="flags"><label><input type="checkbox" ${p.visible!==false?"checked":""} onchange="editProd(${ci},${pi},'visible',this.checked)"> Visible</label><label><input type="checkbox" ${p.available!==false?"checked":""} onchange="editProd(${ci},${pi},'available',this.checked)"> Disponible</label></div>
     <div class="actions row-actions"><button class="icon" onclick="moveProd(${ci},${pi},-1)">▲</button><button class="icon" onclick="moveProd(${ci},${pi},1)">▼</button><button class="icon" onclick="delProd(${ci},${pi})">🗑</button></div>`;
    pb.appendChild(row);
@@ -109,7 +114,7 @@ function render(){
 function mark(){dirty=true;renderMenu(preview,restaurant,categories)}
 function editCat(i,k,v){categories[i][k]=v;mark()}function editProd(i,j,k,v){categories[i].products[j][k]=v;mark()}
 function addCategory(){categories.push({id:null,name:"NUEVA CATEGORÍA",visible:true,products:[]});mark();render()}
-function addProduct(i){categories[i].products.push({id:null,name:"Nuevo producto",price:"0",promo_price:"",image_url:"",video_url:"",visible:true,available:true,tag:""});mark();render()}
+function addProduct(i){categories[i].products.push({id:null,name:"Nuevo producto",price:"0",promo_price:"",stock:null,low_stock_threshold:5,image_url:"",video_url:"",visible:true,available:true,tag:""});mark();render()}
 function delCat(i){if(confirm("¿Eliminar categoría?")){categories[i]._delete=true;mark();render()}}function delProd(i,j){if(confirm("¿Eliminar producto?")){categories[i].products[j]._delete=true;mark();render()}}
 function moveCat(i,d){const n=i+d;if(n<0||n>=categories.length)return;[categories[i],categories[n]]=[categories[n],categories[i]];mark();render()}
 function moveProd(i,j,d){const a=categories[i].products,n=j+d;if(n<0||n>=a.length)return;[a[j],a[n]]=[a[n],a[j]];mark();render()}
@@ -286,7 +291,7 @@ async function saveAll(){
    for(const p of (c.products||[]).filter(x=>x._delete&&x.id)){let {error}=await sb.from("products").delete().eq("id",p.id);if(error)throw error}
    c.products=(c.products||[]).filter(x=>!x._delete);
    for(let j=0;j<c.products.length;j++){
-    let p=c.products[j],pp={category_id:c.id,name:p.name,price:String(p.price||""),promo_price:String(p.promo_price||""),image_url:p.image_url||"",video_url:p.video_url||"",visible:p.visible!==false,available:p.available!==false,tag:p.tag||"",sort_order:j};
+    let p=c.products[j],pp={category_id:c.id,name:p.name,price:String(p.price||""),promo_price:String(p.promo_price||""),stock:p.stock==null?null:Math.max(0,parseInt(p.stock)||0),low_stock_threshold:Math.max(0,parseInt(p.low_stock_threshold)||0),image_url:p.image_url||"",video_url:p.video_url||"",visible:p.visible!==false,available:p.stock===0?false:p.available!==false,tag:p.tag||"",sort_order:j};
     if(p.id){let {error}=await sb.from("products").update(pp).eq("id",p.id);if(error)throw error}
     else{let {data:n,error}=await sb.from("products").insert(pp).select().single();if(error)throw error;p.id=n.id}
    }

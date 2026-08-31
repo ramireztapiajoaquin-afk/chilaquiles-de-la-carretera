@@ -402,6 +402,10 @@ button,input{font:inherit} button{cursor:pointer}.hidden{display:none!important}
 .confirm-order:disabled{opacity:.68;cursor:wait}
 .order-status{min-height:20px;margin:10px 2px 2px;text-align:center;font-size:13px;font-weight:800}
 .order-status.loading{color:#735c13}.order-status.success{color:#14723c}.order-status.error{color:#b21f18}
+.inventory-editor{grid-column:3/-1;display:grid;grid-template-columns:repeat(2,minmax(110px,1fr)) auto;gap:8px;align-items:end;padding:10px;border-radius:12px;background:#f4f7f2;border:1px solid #dce6d8}
+.inventory-editor label{font-size:11px;font-weight:900;color:#5f695a}.inventory-editor input{width:100%;margin-top:4px;padding:9px;border:1px solid #cfd9cb;border-radius:9px}
+.stock-state{align-self:center;padding:8px 10px;border-radius:999px;text-align:center;font-size:11px;font-weight:950;background:#e6f4eb;color:#17643a}.stock-state.low{background:#fff0c7;color:#7b5700}.stock-state.out{background:#ffe1dc;color:#9c251b}
+@media(max-width:700px){.inventory-editor{grid-column:1/-1;grid-template-columns:1fr 1fr}.stock-state{grid-column:1/-1}}
 .order-tracking{position:fixed;right:18px;bottom:18px;z-index:1200;width:min(360px,calc(100vw - 36px));box-sizing:border-box;background:#fffaf1;border:1px solid #eadfc9;border-radius:18px;padding:16px;box-shadow:0 18px 50px rgba(42,29,13,.28)}
 .tracking-head{display:flex;align-items:flex-start;justify-content:space-between;border-bottom:1px solid #eadfc9;padding-bottom:10px}
 .tracking-head strong,.tracking-head small{display:block}.tracking-head strong{color:#a71912;font-size:18px}.tracking-head small{margin-top:2px;color:#766b5b;font-weight:800}
