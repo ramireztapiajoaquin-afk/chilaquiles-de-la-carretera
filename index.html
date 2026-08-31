@@ -92,6 +92,7 @@ let cart=[];
 let currentRestaurant=null;
 let ordering=false;
 let trackingTimer=null;
+const assignedTable=new URLSearchParams(location.search).get('mesa');
 
 const orderSteps=[
   ['nuevo','Pedido recibido'],
@@ -151,6 +152,20 @@ function updateCartUI(){
 }
 function openCart(){updateCartUI();document.getElementById("cartModal").classList.remove("hidden")}
 function closeCart(){document.getElementById("cartModal").classList.add("hidden")}
+function configureAssignedTable(){
+  if(!assignedTable)return;
+  const clean=String(assignedTable).replace(/[^0-9A-Za-z_-]/g,'').slice(0,12);
+  if(!clean)return;
+  const input=document.getElementById('tableNumber');
+  const label=document.querySelector('label[for="tableNumber"]');
+  input.value=clean;
+  input.readOnly=true;
+  input.classList.add('assigned');
+  if(label)label.textContent=`Mesa asignada por QR: ${clean}`;
+  const badge=document.getElementById('assignedTableBadge');
+  badge.textContent=`MESA ${clean}`;
+  badge.classList.remove('hidden');
+}
 function setOrderStatus(message,type=""){
   const box=document.getElementById("orderStatus");
   box.textContent=message;
@@ -472,7 +487,9 @@ async function load(){
  if(savedOrder)startOrderTracking(savedOrder);
 }
 load();
+document.addEventListener('DOMContentLoaded',configureAssignedTable,{once:true});
 </script>
+<div id="assignedTableBadge" class="assigned-table-badge hidden">MESA</div>
 <button id="cartFab" class="cart-fab hidden" type="button" onclick="openCart()">
   🛒 Pedido <span id="cartCount" class="cart-count">0</span>
 </button>

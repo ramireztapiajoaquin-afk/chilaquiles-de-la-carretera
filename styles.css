@@ -396,6 +396,8 @@ button,input{font:inherit} button{cursor:pointer}.hidden{display:none!important}
 .table-label{display:block;margin:14px 0 6px;font-weight:900;color:#252018}
 .table-number{width:100%;box-sizing:border-box;border:2px solid #ded7ca;border-radius:12px;padding:13px 14px;font:inherit;background:#fff;color:#1e1a15;outline:none}
 .table-number:focus{border-color:#d53325;box-shadow:0 0 0 3px rgba(213,51,37,.12)}
+.table-number.assigned{background:#e9f7ee;border-color:#2f9b61;color:#17643a;font-weight:950}
+.assigned-table-badge{position:fixed;top:12px;right:12px;z-index:1100;background:#17643a;color:#fff;border:2px solid #fff;border-radius:999px;padding:8px 13px;font-size:13px;font-weight:950;box-shadow:0 6px 18px rgba(0,0,0,.22)}
 .confirm-order{width:100%;margin-top:12px;border:0;border-radius:14px;padding:15px;background:linear-gradient(135deg,#d53325,#a71912);color:#fff;font-weight:950;font-size:16px;box-shadow:0 8px 20px rgba(169,25,18,.24);cursor:pointer}
 .confirm-order:disabled{opacity:.68;cursor:wait}
 .order-status{min-height:20px;margin:10px 2px 2px;text-align:center;font-size:13px;font-weight:800}
