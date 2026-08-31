@@ -90,6 +90,7 @@ function setupPremiumCover(r){
 
 let cart=[];
 let currentRestaurant=null;
+let ordering=false;
 
 function parsePriceForCart(value){
   const m=String(value??"").replace(",",".").match(/(\d+(?:\.\d+)?)/);
@@ -140,6 +141,62 @@ function updateCartUI(){
 }
 function openCart(){updateCartUI();document.getElementById("cartModal").classList.remove("hidden")}
 function closeCart(){document.getElementById("cartModal").classList.add("hidden")}
+function setOrderStatus(message,type=""){
+  const box=document.getElementById("orderStatus");
+  box.textContent=message;
+  box.className=`order-status ${type}`.trim();
+}
+async function confirmOrder(){
+  if(ordering)return;
+  if(!cart.length){alert("Agrega al menos un producto.");return}
+  if(!currentRestaurant?.id){alert("No se pudo identificar el restaurante.");return}
+
+  const table=document.getElementById("tableNumber").value.trim();
+  if(!table){
+    setOrderStatus("Escribe tu número de mesa.","error");
+    document.getElementById("tableNumber").focus();
+    return;
+  }
+
+  ordering=true;
+  const button=document.getElementById("confirmOrderBtn");
+  button.disabled=true;
+  button.textContent="ENVIANDO PEDIDO…";
+  setOrderStatus("Enviando el pedido al mesero…","loading");
+
+  const notes=document.getElementById("cartNotes").value.trim();
+  const items=cart.map(x=>({
+    product_id:String(x.key),
+    producto:String(x.name),
+    cantidad:Number(x.qty),
+    precio:Number(x.price)
+  }));
+
+  try{
+    const sb=makeClient();
+    const {data,error}=await sb.rpc("confirmar_pedido_cliente",{
+      p_restaurant_id:currentRestaurant.id,
+      p_numero_mesa:table,
+      p_observaciones:notes||null,
+      p_items:items
+    });
+    if(error)throw error;
+
+    cart=[];
+    updateCartUI();
+    document.getElementById("cartNotes").value="";
+    setOrderStatus(`✅ Pedido confirmado. Folio ${String(data).slice(0,8).toUpperCase()}. El mesero ya fue notificado.`,"success");
+    button.textContent="PEDIDO CONFIRMADO";
+    setTimeout(()=>closeCart(),2600);
+  }catch(error){
+    console.error(error);
+    setOrderStatus("No se pudo confirmar. Revisa tu conexión e inténtalo nuevamente.","error");
+    button.disabled=false;
+    button.textContent="✅ CONFIRMAR PEDIDO";
+  }finally{
+    ordering=false;
+  }
+}
 function sendWhatsApp(){
   if(!cart.length){alert("Agrega al menos un producto.");return}
   const number=(currentRestaurant?.whatsapp_number||"").replace(/\D/g,"");
@@ -356,7 +413,11 @@ load();
     <div class="cart-total">
       <span>Total</span><span id="cartTotal">$0</span>
     </div>
+    <label class="table-label" for="tableNumber">Número de mesa</label>
+    <input id="tableNumber" class="table-number" type="text" inputmode="numeric" maxlength="12" placeholder="Ejemplo: 5" autocomplete="off">
     <textarea id="cartNotes" class="cart-notes" placeholder="Indicaciones: sin cebolla, salsa aparte, etc."></textarea>
+    <button id="confirmOrderBtn" class="confirm-order" type="button" onclick="confirmOrder()">✅ CONFIRMAR PEDIDO</button>
+    <div id="orderStatus" class="order-status" aria-live="polite"></div>
     <button class="whatsapp-send" onclick="sendWhatsApp()">📲 Enviar pedido por WhatsApp</button>
   </div>
 </div>
