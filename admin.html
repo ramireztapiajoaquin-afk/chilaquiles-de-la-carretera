@@ -291,9 +291,11 @@ async function saveAll(){
    for(const p of (c.products||[]).filter(x=>x._delete&&x.id)){let {error}=await sb.from("products").delete().eq("id",p.id);if(error)throw error}
    c.products=(c.products||[]).filter(x=>!x._delete);
    for(let j=0;j<c.products.length;j++){
-    let p=c.products[j],pp={category_id:c.id,name:p.name,price:String(p.price||""),promo_price:String(p.promo_price||""),stock:p.stock==null?null:Math.max(0,parseInt(p.stock)||0),low_stock_threshold:Math.max(0,parseInt(p.low_stock_threshold)||0),image_url:p.image_url||"",video_url:p.video_url||"",visible:p.visible!==false,available:p.stock===0?false:p.available!==false,tag:p.tag||"",sort_order:j};
+    let p=c.products[j],pp={category_id:c.id,name:p.name,price:String(p.price||""),promo_price:String(p.promo_price||""),image_url:p.image_url||"",video_url:p.video_url||"",visible:p.visible!==false,available:p.stock===0?false:p.available!==false,tag:p.tag||"",sort_order:j};
     if(p.id){let {error}=await sb.from("products").update(pp).eq("id",p.id);if(error)throw error}
     else{let {data:n,error}=await sb.from("products").insert(pp).select().single();if(error)throw error;p.id=n.id}
+    const {error:inventoryError}=await sb.rpc('actualizar_inventario_producto',{p_product_id:p.id,p_stock:p.stock==null?null:Math.max(0,parseInt(p.stock)||0),p_low_stock_threshold:Math.max(0,parseInt(p.low_stock_threshold)||0)});
+    if(inventoryError)throw inventoryError;
    }
   }
   dirty=false;msg(saveStatus,"Menú actualizado correctamente.");await load()

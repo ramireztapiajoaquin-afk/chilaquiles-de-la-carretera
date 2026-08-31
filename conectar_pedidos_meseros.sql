@@ -9,6 +9,43 @@ alter table public.products add constraint products_stock_nonnegative check (sto
 alter table public.products drop constraint if exists products_low_stock_nonnegative;
 alter table public.products add constraint products_low_stock_nonnegative check (low_stock_threshold >= 0);
 
+-- Guardado específico de inventario para el propietario o administrador.
+create or replace function public.actualizar_inventario_producto(
+  p_product_id uuid,
+  p_stock integer,
+  p_low_stock_threshold integer
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not exists (
+    select 1
+    from public.products p
+    join public.categories c on c.id=p.category_id
+    join public.restaurants r on r.id=c.restaurant_id
+    where p.id=p_product_id
+      and (r.owner_id=auth.uid() or exists (
+        select 1 from public.meseros m
+        where m.user_id=auth.uid() and m.restaurant_id=r.id and m.activo=true and m.rol='admin'
+      ))
+  ) then
+    raise exception 'No tienes permiso para actualizar este inventario';
+  end if;
+
+  update public.products
+  set stock=case when p_stock is null then null else greatest(0,p_stock) end,
+      low_stock_threshold=greatest(0,coalesce(p_low_stock_threshold,5)),
+      available=case when p_stock is null then available else p_stock>0 end
+  where id=p_product_id;
+end;
+$$;
+
+revoke all on function public.actualizar_inventario_producto(uuid,integer,integer) from public;
+grant execute on function public.actualizar_inventario_producto(uuid,integer,integer) to authenticated;
+
 create or replace function public.confirmar_pedido_cliente(
   p_restaurant_id uuid,
   p_numero_mesa text,
