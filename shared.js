@@ -112,3 +112,44 @@ function enableRepeatOrdering(){
 }
 
 document.addEventListener('DOMContentLoaded',enableRepeatOrdering,{once:true});
+
+// En Meseros, cobrar desde cualquier consumo entregado cierra todos los consumos
+// entregados pendientes de esa misma mesa en una sola acción y con la misma forma de pago.
+function enableOpenTableCheckout(){
+  if(!location.pathname.endsWith('/meseros.html'))return;
+  window.setTimeout(()=>{
+    window.chargeOrder=async function(id,method){
+      try{
+        if(typeof sb==='undefined' || !sb)return alert('No hay conexión con Caja.');
+        const {data:base,error:baseError}=await sb.from('pedidos')
+          .select('id,restaurant_id,numero_mesa,total')
+          .eq('id',id).eq('estado','entregado').maybeSingle();
+        if(baseError||!base)return alert('No se encontró el consumo entregado.');
+
+        const {data:pending,error:pendingError}=await sb.from('pedidos')
+          .select('id,total')
+          .eq('restaurant_id',base.restaurant_id)
+          .eq('numero_mesa',base.numero_mesa)
+          .eq('estado','entregado');
+        if(pendingError)return alert('No se pudo consultar la cuenta de la mesa: '+pendingError.message);
+        if(!pending?.length)return alert('No hay consumos pendientes de cobro en esta mesa.');
+
+        const total=pending.reduce((sum,p)=>sum+Number(p.total||0),0);
+        if(!confirm(`Mesa ${base.numero_mesa}: ${pending.length} consumo(s) por $${total.toFixed(0)}. ¿Confirmar cobro por ${method.toUpperCase()} y cerrar la cuenta?`))return;
+
+        const now=new Date().toISOString();
+        const ids=pending.map(p=>p.id);
+        const {error}=await sb.from('pedidos').update({
+          estado:'cobrado',forma_pago:method,cobrado_at:now,updated_at:now
+        }).in('id',ids).eq('estado','entregado');
+        if(error)return alert('No se pudo registrar el cobro: '+error.message);
+        if(typeof refreshAll==='function')await refreshAll(false);
+      }catch(error){
+        console.error(error);
+        alert('No se pudo cerrar la cuenta de la mesa.');
+      }
+    };
+  },0);
+}
+
+document.addEventListener('DOMContentLoaded',enableOpenTableCheckout,{once:true});
