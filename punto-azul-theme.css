@@ -1,0 +1,208 @@
+/* =========================================================
+   PUNTO AZUL RESTAURANTE — tema visual público
+   Capa independiente: no modifica lógica, pedidos ni Supabase.
+   ========================================================= */
+
+body.punto-azul-theme{
+  --green:#0c3c70;
+  --green2:#08294f;
+  --yellow:#c9d0d8;
+  --red:#2f78bb;
+  --bg:#05080d;
+  --card:#0c1119;
+  --text:#f4f7fb;
+  --muted:#a8b2bf;
+  --border:#354151;
+  min-height:100vh;
+  background:
+    radial-gradient(circle at 50% -10%,rgba(32,104,175,.30),transparent 38%),
+    linear-gradient(155deg,#020408 0%,#071426 45%,#03060b 100%);
+  color:var(--text);
+}
+
+body.punto-azul-theme::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:-1;
+  background:
+    linear-gradient(115deg,transparent 0 44%,rgba(222,229,237,.035) 45%,transparent 46% 100%),
+    radial-gradient(circle at 85% 20%,rgba(150,173,201,.08),transparent 20%);
+}
+
+/* ===== Portada premium ===== */
+body.punto-azul-theme .premium-cover{
+  background:#02050a;
+}
+body.punto-azul-theme .premium-video-overlay{
+  background:linear-gradient(180deg,rgba(2,5,10,.52),rgba(3,10,19,.84));
+}
+body.punto-azul-theme .premium-glow{
+  background:radial-gradient(circle,rgba(36,112,187,.35),transparent 64%);
+}
+body.punto-azul-theme .premium-card{
+  border:1px solid rgba(206,216,227,.45);
+  background:linear-gradient(145deg,rgba(6,15,28,.90),rgba(3,7,13,.88));
+  box-shadow:
+    0 28px 80px rgba(0,0,0,.58),
+    0 0 42px rgba(28,94,158,.18),
+    inset 0 1px 0 rgba(255,255,255,.10);
+  backdrop-filter:blur(16px);
+}
+body.punto-azul-theme .premium-logo{
+  display:none!important;
+}
+body.punto-azul-theme .punto-azul-logo-video{
+  display:block;
+  width:min(100%,560px);
+  max-height:315px;
+  aspect-ratio:16/9;
+  object-fit:contain;
+  margin:0 auto 14px;
+  border-radius:18px;
+  background:#02050a;
+  border:1px solid rgba(201,210,220,.38);
+  box-shadow:0 14px 45px rgba(0,0,0,.52),0 0 30px rgba(35,111,184,.16);
+}
+body.punto-azul-theme .premium-kicker{
+  color:#cbd3dc;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+}
+body.punto-azul-theme .premium-title{
+  color:#f2f5f8;
+  text-shadow:0 2px 18px rgba(58,132,203,.24);
+}
+body.punto-azul-theme .premium-subtitle,
+body.punto-azul-theme .premium-note{
+  color:#b9c4d0;
+}
+body.punto-azul-theme .premium-chip{
+  color:#e8edf3;
+  background:rgba(10,35,64,.66);
+  border:1px solid rgba(193,205,217,.24);
+}
+body.punto-azul-theme .premium-enter{
+  border:1px solid rgba(222,230,238,.75);
+  color:#fff;
+  background:linear-gradient(135deg,#123e6d,#1f67a8 56%,#76889b 145%);
+  box-shadow:0 12px 28px rgba(14,72,128,.33),inset 0 1px 0 rgba(255,255,255,.24);
+}
+body.punto-azul-theme .premium-enter:hover{
+  filter:brightness(1.08);
+  transform:translateY(-1px);
+}
+
+/* ===== Menú público ===== */
+body.punto-azul-theme .menu-card{
+  background:linear-gradient(180deg,#0c121b,#080c12);
+  border:1px solid rgba(192,202,213,.42);
+  box-shadow:0 20px 55px rgba(0,0,0,.42),0 0 30px rgba(21,74,126,.12);
+}
+body.punto-azul-theme .menu-hero{
+  background:linear-gradient(135deg,#050a11 0%,#0b2d53 58%,#071321 100%);
+  border-bottom:4px solid #9ca9b7;
+  padding-top:22px;
+}
+body.punto-azul-theme .menu-hero .public-logo{
+  display:none!important;
+}
+body.punto-azul-theme .punto-azul-menu-video{
+  display:block;
+  width:min(100%,620px);
+  aspect-ratio:16/9;
+  object-fit:contain;
+  margin:0 auto 12px;
+  border-radius:16px;
+  background:#03070c;
+  border:1px solid rgba(204,214,224,.32);
+  box-shadow:0 12px 35px rgba(0,0,0,.45);
+}
+body.punto-azul-theme .menu-hero h1{
+  color:#eef2f6;
+  text-shadow:0 2px 12px rgba(30,106,177,.35);
+  letter-spacing:.035em;
+}
+body.punto-azul-theme .menu-hero p{
+  color:#bdc7d2;
+}
+body.punto-azul-theme .menu-content{
+  color:#edf2f7;
+}
+body.punto-azul-theme .section-title{
+  background:linear-gradient(135deg,#0b315c,#15578f);
+  color:#f7f9fb;
+  border:1px solid rgba(202,212,222,.28);
+}
+body.punto-azul-theme .menu-item-card{
+  border-bottom-color:rgba(188,199,211,.22);
+}
+body.punto-azul-theme .item-thumb,
+body.punto-azul-theme .item-video,
+body.punto-azul-theme .item-noimg{
+  border-color:rgba(189,200,212,.38);
+  background:#05080d;
+}
+body.punto-azul-theme .dots{
+  border-bottom-color:#748395;
+}
+body.punto-azul-theme .price,
+body.punto-azul-theme .promo{
+  color:#8cc7ff;
+}
+body.punto-azul-theme .old{
+  color:#8994a1;
+}
+body.punto-azul-theme .menu-footer{
+  background:linear-gradient(90deg,#061426,#0c3c70,#061426);
+  color:#f5f8fb;
+  border-top:1px solid rgba(203,213,224,.28);
+}
+
+/* ===== Voz, carrito y acciones del cliente ===== */
+body.punto-azul-theme .public-voice-card{
+  border-color:rgba(188,201,215,.34);
+  background:linear-gradient(135deg,#0a1725,#0b223a);
+  box-shadow:0 8px 22px rgba(0,0,0,.22);
+}
+body.punto-azul-theme .public-voice-text strong{color:#dce5ee}
+body.punto-azul-theme .public-voice-text span{color:#9fabb8}
+body.punto-azul-theme .public-voice-play,
+body.punto-azul-theme .add-cart-btn,
+body.punto-azul-theme .cart-fab,
+body.punto-azul-theme .music-toggle{
+  background:linear-gradient(135deg,#0b315c,#1765a4);
+  border-color:rgba(211,220,229,.42);
+  color:#fff;
+}
+body.punto-azul-theme .public-voice-play.playing{
+  background:#123f6c;
+}
+
+/* Los modales siguen legibles aunque el tema principal sea oscuro */
+body.punto-azul-theme .cart-modal,
+body.punto-azul-theme .order-tracking,
+body.punto-azul-theme .modal-card{
+  --text:#17202a;
+  color:#17202a;
+}
+
+@media(max-width:650px){
+  body.punto-azul-theme .punto-azul-logo-video{
+    width:100%;
+    max-height:none;
+    border-radius:13px;
+  }
+  body.punto-azul-theme .punto-azul-menu-video{
+    width:100%;
+    border-radius:12px;
+  }
+  body.punto-azul-theme .premium-card{
+    border-radius:18px;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  body.punto-azul-theme .premium-enter{transition:none!important}
+}
