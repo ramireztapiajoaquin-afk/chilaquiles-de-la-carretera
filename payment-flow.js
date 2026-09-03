@@ -125,10 +125,11 @@
 
   function createPaidVideoOverlay(url,orderId,onDone){
     let finished=false;
+    let fallback=null;
     const finish=()=>{
       if(finished)return;
       finished=true;
-      clearTimeout(fallback);
+      if(fallback)clearTimeout(fallback);
       sessionStorage.setItem('paymentIntroPlayed:'+orderId,'1');
       overlay.classList.add('is-leaving');
       setTimeout(()=>{
@@ -168,7 +169,7 @@
         video.play().catch(finish);
       });
     }
-    const fallback=setTimeout(finish,11000);
+    fallback=setTimeout(finish,11000);
   }
 
   function setupClientPaymentIntro(){
@@ -211,6 +212,14 @@
     );
   }
 
-  if(isAdmin)document.addEventListener('DOMContentLoaded',setupAdminPaymentVideo,{once:true});
-  if(isClient)document.addEventListener('DOMContentLoaded',setupClientPaymentIntro,{once:true});
+  function start(){
+    if(isAdmin)setupAdminPaymentVideo();
+    if(isClient)setupClientPaymentIntro();
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',start,{once:true});
+  }else{
+    start();
+  }
 })();
