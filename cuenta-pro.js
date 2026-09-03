@@ -14,8 +14,8 @@
       .cuenta-pro-card{width:min(640px,100%);max-height:94vh;overflow:auto;background:linear-gradient(180deg,#fff,#f5f8fb);border:1px solid #aebdcb;border-radius:24px 24px 14px 14px;box-shadow:0 -22px 70px rgba(0,0,0,.36);color:#142333}
       .cuenta-pro-head{padding:18px;background:linear-gradient(135deg,#071a2f,#0e4f88);color:#fff;border-radius:23px 23px 0 0}.cuenta-pro-head h2{margin:0;font-size:22px}.cuenta-pro-head p{margin:5px 0 0;color:#cbd8e3;font-size:13px}
       .cuenta-pro-method{display:inline-block;margin-top:7px;padding:5px 9px;border-radius:999px;background:#ffffff20;color:#fff;font-size:11px;font-weight:900;text-transform:uppercase}
-      .cuenta-pro-body{padding:18px}.cuenta-pro-totals{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.cuenta-pro-total{background:#fff;border:1px solid #d4dee7;border-radius:14px;padding:11px;text-align:center}.cuenta-pro-total span{display:block;font-size:9px;color:#6c7a86;font-weight:900;letter-spacing:.04em}.cuenta-pro-total b{display:block;font-size:18px;color:#071a2f;margin-top:3px}
-      .cuenta-pro-total.remaining{background:#eef5fb;border-color:#b8d2e5}.cuenta-pro-total.remaining b{color:#0e4f88}
+      .cuenta-pro-body{padding:18px}.cuenta-pro-totals{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.cuenta-pro-total{background:#fff;border:1px solid #d4dee7;border-radius:14px;padding:11px;text-align:center}.cuenta-pro-total span{display:block;font-size:9px;color:#6c7a86;font-weight:900;letter-spacing:.04em}.cuenta-pro-total b{display:block;font-size:18px;color:#071a2f;margin-top:3px}
+      .cuenta-pro-total.discount{background:#fff8ea;border-color:#ead3a5}.cuenta-pro-total.discount b{color:#9b6b10}.cuenta-pro-total.remaining{background:#eef5fb;border-color:#b8d2e5}.cuenta-pro-total.remaining b{color:#0e4f88}
       .cuenta-pro-section{margin-top:16px}.cuenta-pro-section-title{font-size:12px;font-weight:950;color:#465866;letter-spacing:.05em;margin-bottom:8px}.cuenta-pro-chips{display:flex;gap:8px;flex-wrap:wrap}.cuenta-pro-chip{border:1px solid #b9c7d3;background:#fff;color:#17334d;border-radius:999px;padding:10px 14px;font-weight:900;cursor:pointer}.cuenta-pro-chip.active{background:#0e4f88;color:#fff;border-color:#0e4f88}.cuenta-pro-chip:disabled,.cuenta-pro-custom:disabled{opacity:.55;cursor:not-allowed}
       .cuenta-pro-custom{width:124px;border:1px solid #b9c7d3;border-radius:12px;padding:10px 12px;background:#fff}.cuenta-pro-split{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.cuenta-pro-step{width:42px;height:42px;border:1px solid #b9c7d3;border-radius:12px;background:#fff;color:#0e4f88;font-size:22px;font-weight:900}.cuenta-pro-step:disabled{opacity:.45}.cuenta-pro-personas{min-width:88px;text-align:center;font-size:19px;font-weight:950;color:#071a2f}
       .cuenta-pro-per-person{margin-top:10px;background:#eaf2f8;border:1px solid #c8d8e5;border-radius:14px;padding:12px;text-align:center}.cuenta-pro-per-person span{font-size:11px;color:#627483;font-weight:900}.cuenta-pro-per-person b{display:block;font-size:24px;color:#0e4f88;margin-top:2px}
@@ -52,12 +52,16 @@
       if(error)throw error;
       payments=data||[];
     }
+    const {data:promo,error:promoError}=await sb.rpc('consultar_promocion_cuenta',{p_pedido_id:orderId});
+    if(promoError)throw promoError;
     const subtotal=pending.reduce((sum,p)=>sum+Number(p.total||0),0);
     const paid=payments.reduce((sum,p)=>sum+Number(p.monto||0),0);
     const locked=paid>0;
     const propina=locked?Number(accountRow?.propina||0):0;
     const people=locked?Math.max(1,Number(accountRow?.personas_dividir||1)):1;
-    return {base,pending,subtotal,payments,paid,locked,propina,people,cuentaId};
+    const discount=Math.max(0,Number(promo?.descuento||0));
+    const promoName=promo?.nombre||null;
+    return {base,pending,subtotal,payments,paid,locked,propina,people,cuentaId,discount,promoName};
   }
 
   function openCheckout(orderId,method){
@@ -80,15 +84,17 @@
     let customTip=state.locked?state.propina:null;
     let people=state.people;
     const body=backdrop.querySelector('.cuenta-pro-body');
-    backdrop.querySelector('#cuentaProHeader').textContent=`Mesa ${state.base.numero_mesa} · ${state.pending.length} consumo${state.pending.length===1?'':'s'}`;
+    backdrop.querySelector('#cuentaProHeader').textContent=`Mesa ${state.base.numero_mesa} · ${state.pending.length} consumo${state.pending.length===1?'':'s'}${state.promoName?' · '+state.promoName:''}`;
 
     const tipAmount=()=>state.locked?state.propina:(customTip!==null?Math.max(0,Number(customTip)||0):Math.round((state.subtotal*(tipPercent/100))*100)/100);
-    const grand=()=>state.subtotal+tipAmount();
+    const netConsumption=()=>Math.max(0,state.subtotal-state.discount);
+    const grand=()=>netConsumption()+tipAmount();
     const remaining=()=>Math.max(0,grand()-state.paid);
 
     body.innerHTML=`
       <div class="cuenta-pro-totals">
         <div class="cuenta-pro-total"><span>CONSUMO</span><b id="cpSubtotal"></b></div>
+        <div class="cuenta-pro-total discount"><span>DESCUENTO</span><b id="cpDiscount"></b></div>
         <div class="cuenta-pro-total"><span>PROPINA</span><b id="cpTip"></b></div>
         <div class="cuenta-pro-total"><span>YA PAGADO</span><b id="cpPaid"></b></div>
         <div class="cuenta-pro-total remaining"><span>SALDO</span><b id="cpRemaining"></b></div>
@@ -106,13 +112,15 @@
 
     const update=()=>{
       body.querySelector('#cpSubtotal').textContent=money(state.subtotal);
+      body.querySelector('#cpDiscount').textContent=state.discount>0?money(-state.discount):money(0);
       body.querySelector('#cpTip').textContent=money(tipAmount());
       body.querySelector('#cpPaid').textContent=money(state.paid);
       body.querySelector('#cpRemaining').textContent=money(remaining());
       body.querySelector('#cpPeople').textContent=people+(people===1?' persona':' personas');
       body.querySelector('#cpPerPerson').textContent=money(grand()/people);
+      const promoLine=state.discount>0?`<div><b>Promoción:</b> ${esc(state.promoName||'Aplicada')} · -${money(state.discount)}</div>`:'';
       const hist=state.payments.length?state.payments.map((p,i)=>`<div><b>Pago ${i+1}:</b> ${money(p.monto)} · ${esc(String(p.forma_pago).toUpperCase())}</div>`).join(''):'Todavía no hay pagos parciales registrados.';
-      body.querySelector('#cpHistory').innerHTML=hist;
+      body.querySelector('#cpHistory').innerHTML=promoLine+hist;
       const amount=body.querySelector('#cpPaymentAmount');
       if(!amount.value)amount.value=(state.locked?Math.min(remaining(),grand()/people):remaining()).toFixed(2);
     };
