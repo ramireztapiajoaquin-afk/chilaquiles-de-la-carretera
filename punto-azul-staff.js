@@ -16,7 +16,7 @@
   // Caja PRO amplía únicamente el historial/corte para mostrar consumo, propina y total cobrado.
   if(path.endsWith('/caja.html') && !document.querySelector('script[data-caja-pro]')){
     const script=document.createElement('script');
-    script.src='caja-pro.js?v=1';
+    script.src='caja-pro.js?v=2';
     script.defer=true;
     script.dataset.cajaPro='1';
     document.head.appendChild(script);
