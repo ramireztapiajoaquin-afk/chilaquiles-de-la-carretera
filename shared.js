@@ -56,7 +56,6 @@ function renderMenu(container,restaurant,categories){
   setTimeout(activateContinuousVideos, 0);
 }
 
-
 function activateContinuousVideos(){
   const videos = document.querySelectorAll("video.item-video");
   videos.forEach(v => {
@@ -111,7 +110,36 @@ function enableRepeatOrdering(){
   resetAfterSuccess();
 }
 
-document.addEventListener('DOMContentLoaded',enableRepeatOrdering,{once:true});
+// El seguimiento no debe bloquear el menú. Inserta un botón grande para volver a pedir.
+function enableKeepOrderingButton(){
+  const panel=document.getElementById('orderTracking');
+  if(!panel || panel.querySelector('[data-keep-ordering]'))return;
+  const actions=panel.querySelector('.service-actions');
+  if(!actions)return;
+
+  const button=document.createElement('button');
+  button.type='button';
+  button.dataset.keepOrdering='true';
+  button.className='service-btn';
+  button.textContent='➕ SEGUIR PIDIENDO';
+  button.style.width='100%';
+  button.style.background='#176c44';
+  button.style.color='#fff';
+  button.style.fontWeight='900';
+  button.style.marginBottom='8px';
+  button.style.minHeight='48px';
+  button.addEventListener('click',()=>{
+    panel.classList.add('hidden');
+    const menu=document.getElementById('menu');
+    if(menu) menu.scrollIntoView({behavior:'smooth',block:'start'});
+  });
+  actions.prepend(button);
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  enableRepeatOrdering();
+  enableKeepOrderingButton();
+},{once:true});
 
 // En Meseros, cobrar desde cualquier consumo entregado cierra todos los consumos
 // entregados pendientes de esa misma mesa en una sola acción y con la misma forma de pago.
