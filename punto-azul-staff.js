@@ -87,6 +87,20 @@
     else links.appendChild(a);
   }
 
+  function ensurePromotionsProLink(){
+    if(!path.endsWith('/dueno.html'))return;
+    const links=document.querySelector('.links');
+    if(!links || links.querySelector('[data-promociones-pro-link]'))return;
+    const a=document.createElement('a');
+    a.className='link';
+    a.href='promociones-pro.html';
+    a.dataset.promocionesProLink='1';
+    a.innerHTML='<span>🎟️</span>Promociones PRO';
+    const crm=links.querySelector('[data-crm-pro-link]');
+    if(crm && crm.nextSibling)links.insertBefore(a,crm.nextSibling);
+    else links.appendChild(a);
+  }
+
   function forceBrand(){
     replaceText(document.body);
     ['restaurantName','restaurant'].forEach(id=>{
@@ -106,6 +120,7 @@
     ensureInventoryProLink();
     ensurePurchasesProLink();
     ensureCrmProLink();
+    ensurePromotionsProLink();
   }
 
   if(document.readyState==='loading'){
