@@ -7,7 +7,7 @@
   // No modifica el HTML ni la lógica original del panel.
   if(path.endsWith('/meseros.html') && !document.querySelector('script[data-cuenta-pro]')){
     const script=document.createElement('script');
-    script.src='cuenta-pro.js?v=1';
+    script.src='cuenta-pro.js?v=2';
     script.defer=true;
     script.dataset.cuentaPro='1';
     document.head.appendChild(script);
