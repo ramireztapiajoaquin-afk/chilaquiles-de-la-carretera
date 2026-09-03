@@ -7,7 +7,7 @@
   // No modifica el HTML ni la lógica original del panel.
   if(path.endsWith('/meseros.html') && !document.querySelector('script[data-cuenta-pro]')){
     const script=document.createElement('script');
-    script.src='cuenta-pro.js?v=2';
+    script.src='cuenta-pro.js?v=3';
     script.defer=true;
     script.dataset.cuentaPro='1';
     document.head.appendChild(script);
@@ -19,6 +19,15 @@
     script.src='crm-ventas-pro.js?v=2';
     script.defer=true;
     script.dataset.crmVentasPro='1';
+    document.head.appendChild(script);
+  }
+
+  // Promociones Ventas PRO añade promociones elegibles a Cuenta PRO.
+  if(path.endsWith('/meseros.html') && !document.querySelector('script[data-promociones-ventas-pro]')){
+    const script=document.createElement('script');
+    script.src='promociones-ventas-pro.js?v=1';
+    script.defer=true;
+    script.dataset.promocionesVentasPro='1';
     document.head.appendChild(script);
   }
 
