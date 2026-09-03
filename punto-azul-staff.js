@@ -23,7 +23,9 @@
     replaceText(document.body);
     ['restaurantName','restaurant'].forEach(id=>{
       const el=document.getElementById(id);
-      if(el)el.textContent='Punto Azul Restaurante';
+      if(el && el.textContent!=='Punto Azul Restaurante'){
+        el.textContent='Punto Azul Restaurante';
+      }
     });
 
     const brand=document.querySelector('.brand strong,.top b,.topbar .brand strong');
@@ -49,7 +51,7 @@
 
   const observer=new MutationObserver(()=>{
     window.clearTimeout(observer._t);
-    observer._t=window.setTimeout(forceBrand,40);
+    observer._t=window.setTimeout(forceBrand,50);
   });
   if(document.documentElement){
     observer.observe(document.documentElement,{childList:true,subtree:true,characterData:true});
