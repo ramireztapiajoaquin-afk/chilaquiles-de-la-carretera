@@ -182,6 +182,52 @@ document.addEventListener('DOMContentLoaded',()=>{
   keepTrackingPanelDismissed();
 },{once:true});
 
+// Muestra al cliente el total acumulado de todos los pedidos de su cuenta de mesa.
+function enableClientRunningTotal(){
+  const panel=document.getElementById('orderTracking');
+  if(!panel)return;
+  window.setTimeout(()=>{
+    if(typeof window.renderOrderTracking!=='function')return;
+    const originalRender=window.renderOrderTracking;
+    if(originalRender.__clientRunningTotal)return;
+
+    const wrapped=function(order){
+      originalRender(order);
+      const steps=document.getElementById('trackingSteps');
+      const actions=panel.querySelector('.service-actions');
+      if(!steps || !actions)return;
+
+      let box=document.getElementById('tableAccountTotal');
+      if(!box){
+        box=document.createElement('div');
+        box.id='tableAccountTotal';
+        box.style.margin='14px 0 12px';
+        box.style.padding='15px 14px';
+        box.style.borderRadius='16px';
+        box.style.background='#fff7df';
+        box.style.border='2px solid #e0ad22';
+        box.style.textAlign='center';
+        box.style.boxShadow='0 8px 20px rgba(0,0,0,.08)';
+        actions.parentNode.insertBefore(box,actions);
+      }
+
+      const total=Number(order?.total_cuenta||0);
+      const count=Number(order?.pedidos_cuenta||0);
+      const paid=order?.estado==='cobrado';
+      const label=paid?'TOTAL PAGADO DE LA MESA':'TOTAL ACTUAL DE TU MESA';
+      const amount=total.toLocaleString('es-MX',{style:'currency',currency:'MXN'});
+      box.innerHTML=`<div style="font-size:11px;font-weight:900;letter-spacing:.08em;color:#756d64">${label}</div>
+        <div style="font-size:30px;font-weight:950;color:#176c44;margin:3px 0">${amount}</div>
+        <div style="font-size:12px;color:#756d64">${count} pedido${count===1?'':'s'} en esta cuenta</div>`;
+      box.classList.toggle('hidden',order?.estado==='cancelado');
+    };
+    wrapped.__clientRunningTotal=true;
+    window.renderOrderTracking=wrapped;
+  },0);
+}
+
+document.addEventListener('DOMContentLoaded',enableClientRunningTotal,{once:true});
+
 // En Meseros, cobrar desde cualquier consumo entregado cierra todos los consumos
 // entregados pendientes de esa misma mesa en una sola acción y con la misma forma de pago.
 function enableOpenTableCheckout(){
