@@ -229,6 +229,18 @@ window.APP_CONFIG = {
   }
 })();
 
+// Total final del cliente: consumo + propina + referencia de división de cuenta.
+(function loadClienteTotalPro(){
+  const path=(location.pathname||'').toLowerCase();
+  const isPublicMenu=path==='/' || path.endsWith('/index.html');
+  if(!isPublicMenu || document.querySelector('script[data-cliente-total-pro]'))return;
+  const script=document.createElement('script');
+  script.src='cliente-total-pro.js?v=1';
+  script.defer=true;
+  script.dataset.clienteTotalPro='1';
+  document.head.appendChild(script);
+})();
+
 // Tema Punto Azul para paneles operativos. Es únicamente presentación visual.
 (function loadPuntoAzulStaffTheme(){
   const path=(location.pathname||'').toLowerCase();
