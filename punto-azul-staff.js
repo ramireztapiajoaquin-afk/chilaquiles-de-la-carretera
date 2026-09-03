@@ -3,6 +3,16 @@
   const enabled=['/meseros.html','/cocina.html','/caja.html','/dueno.html'].some(x=>path.endsWith(x));
   if(!enabled)return;
 
+  // Cuenta PRO se añade como módulo externo únicamente en Meseros.
+  // No modifica el HTML ni la lógica original del panel.
+  if(path.endsWith('/meseros.html') && !document.querySelector('script[data-cuenta-pro]')){
+    const script=document.createElement('script');
+    script.src='cuenta-pro.js?v=1';
+    script.defer=true;
+    script.dataset.cuentaPro='1';
+    document.head.appendChild(script);
+  }
+
   document.body.classList.add('punto-azul-staff');
   document.title=document.title.replace(/Chilaquiles de la Carretera/gi,'Punto Azul Restaurante');
 
