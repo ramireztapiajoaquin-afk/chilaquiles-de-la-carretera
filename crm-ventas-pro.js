@@ -29,7 +29,10 @@
     const previous=window.chargeOrder;
     const wrapped=(id,method)=>{
       window.__crmVentasProOrderId=id;
-      return previous(id,method);
+      const out=previous(id,method);
+      const backdrop=document.getElementById('cuentaProBackdrop');
+      if(backdrop)backdrop.dataset.crmOrderId=id;
+      return out;
     };
     wrapped.__cuentaPro=true;
     wrapped.__crmVentasPro=true;
@@ -55,8 +58,9 @@
     if(!backdrop||backdrop.querySelector('[data-crm-ventas-pro]'))return;
     const body=backdrop.querySelector('.cuenta-pro-body');
     if(!body)return;
-    const orderId=window.__crmVentasProOrderId;
+    const orderId=backdrop.dataset.crmOrderId||window.__crmVentasProOrderId;
     if(!orderId)return;
+    backdrop.dataset.crmOrderId=orderId;
     ensureStyles();
 
     const box=document.createElement('div');
@@ -96,8 +100,18 @@
         result.querySelector('[data-crm-assign]').addEventListener('click',async e=>{
           const btn=e.currentTarget;btn.disabled=true;status.textContent='Asignando cliente…';status.style.color='#607180';
           try{
-            const {error:assignError}=await sb.rpc('asignar_cliente_pedido_lealtad',{p_pedido_id:orderId,p_cliente_id:client.cliente_id});
+            const currentOrderId=backdrop.dataset.crmOrderId||orderId;
+            const {data:before,error:beforeError}=await sb.from('pedidos').select('id,estado,cliente_id').eq('id',currentOrderId).maybeSingle();
+            if(beforeError)throw beforeError;
+            if(!before||before.estado!=='entregado')throw new Error('La cuenta ya no está disponible para asignar cliente.');
+
+            const {error:assignError}=await sb.rpc('asignar_cliente_pedido_lealtad',{p_pedido_id:currentOrderId,p_cliente_id:client.cliente_id});
             if(assignError)throw assignError;
+
+            const {data:verified,error:verifyError}=await sb.from('pedidos').select('cliente_id').eq('id',currentOrderId).maybeSingle();
+            if(verifyError)throw verifyError;
+            if(!verified||verified.cliente_id!==client.cliente_id)throw new Error('La asignación no se confirmó. Intenta nuevamente.');
+
             status.textContent=`✓ ${client.nombre} asignado. Los puntos se sumarán automáticamente al liquidar.`;status.style.color='#176c44';
             btn.textContent='ASIGNADO ✓';
           }catch(err){status.textContent='No se pudo asignar: '+err.message;status.style.color='#a1261d';btn.disabled=false;}
