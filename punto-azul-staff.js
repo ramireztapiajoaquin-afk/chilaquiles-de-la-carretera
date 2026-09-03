@@ -56,6 +56,18 @@
     });
   }
 
+  function ensureDashboardProLink(){
+    if(!path.endsWith('/dueno.html'))return;
+    const links=document.querySelector('.links');
+    if(!links || links.querySelector('[data-dashboard-pro-link]'))return;
+    const a=document.createElement('a');
+    a.className='link';
+    a.href='dashboard-pro.html';
+    a.dataset.dashboardProLink='1';
+    a.innerHTML='<span>📊</span>Dashboard Ejecutivo PRO';
+    links.insertBefore(a,links.firstChild);
+  }
+
   function ensureInventoryProLink(){
     if(!path.endsWith('/dueno.html'))return;
     const links=document.querySelector('.links');
@@ -65,7 +77,9 @@
     a.href='inventario-pro.html';
     a.dataset.inventarioProLink='1';
     a.innerHTML='<span>📦</span>Inventario PRO';
-    links.insertBefore(a,links.firstChild);
+    const dashboard=links.querySelector('[data-dashboard-pro-link]');
+    if(dashboard && dashboard.nextSibling)links.insertBefore(a,dashboard.nextSibling);
+    else links.insertBefore(a,links.firstChild);
   }
 
   function ensurePurchasesProLink(){
@@ -126,6 +140,7 @@
       mark.textContent='PUNTO AZUL';
       brand.appendChild(mark);
     }
+    ensureDashboardProLink();
     ensureInventoryProLink();
     ensurePurchasesProLink();
     ensureCrmProLink();
