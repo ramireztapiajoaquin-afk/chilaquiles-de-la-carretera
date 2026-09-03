@@ -64,6 +64,20 @@
     else links.appendChild(a);
   }
 
+  function ensureCrmProLink(){
+    if(!path.endsWith('/dueno.html'))return;
+    const links=document.querySelector('.links');
+    if(!links || links.querySelector('[data-crm-pro-link]'))return;
+    const a=document.createElement('a');
+    a.className='link';
+    a.href='crm-pro.html';
+    a.dataset.crmProLink='1';
+    a.innerHTML='<span>💎</span>CRM PRO · Lealtad';
+    const purchases=links.querySelector('[data-compras-pro-link]');
+    if(purchases && purchases.nextSibling)links.insertBefore(a,purchases.nextSibling);
+    else links.appendChild(a);
+  }
+
   function forceBrand(){
     replaceText(document.body);
     ['restaurantName','restaurant'].forEach(id=>{
@@ -82,6 +96,7 @@
     }
     ensureInventoryProLink();
     ensurePurchasesProLink();
+    ensureCrmProLink();
   }
 
   if(document.readyState==='loading'){
