@@ -13,6 +13,15 @@
     document.head.appendChild(script);
   }
 
+  // CRM Ventas PRO añade identificación opcional de cliente a Cuenta PRO.
+  if(path.endsWith('/meseros.html') && !document.querySelector('script[data-crm-ventas-pro]')){
+    const script=document.createElement('script');
+    script.src='crm-ventas-pro.js?v=1';
+    script.defer=true;
+    script.dataset.crmVentasPro='1';
+    document.head.appendChild(script);
+  }
+
   // Caja PRO amplía únicamente el historial/corte para mostrar consumo, propina y total cobrado.
   if(path.endsWith('/caja.html') && !document.querySelector('script[data-caja-pro]')){
     const script=document.createElement('script');
