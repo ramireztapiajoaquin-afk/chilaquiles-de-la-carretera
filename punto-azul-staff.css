@@ -1,0 +1,279 @@
+/* =========================================================
+   PUNTO AZUL RESTAURANTE — PANEL THEME
+   Capa visual para Meseros, Cocina, Caja y Dueño.
+   No modifica lógica ni datos.
+   ========================================================= */
+
+body.punto-azul-staff{
+  --pa-blue:#0d3c70;
+  --pa-blue2:#071f3b;
+  --pa-blue3:#165d9a;
+  --pa-silver:#c8d0d9;
+  --pa-silver2:#8f9cab;
+  --pa-black:#05080d;
+  --pa-panel:#0c121b;
+  --pa-panel2:#101925;
+  --pa-text:#f2f6fa;
+  --pa-muted:#a8b4c1;
+  --pa-line:#344252;
+  --pa-shadow:0 16px 42px rgba(0,0,0,.34);
+  background:
+    radial-gradient(circle at 50% -15%,rgba(28,98,165,.30),transparent 34%),
+    linear-gradient(145deg,#03060a 0%,#071426 52%,#03060b 100%)!important;
+  color:var(--pa-text)!important;
+  min-height:100vh;
+}
+body.punto-azul-staff::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  background:
+    linear-gradient(115deg,transparent 0 43%,rgba(221,229,238,.025) 44%,transparent 45% 100%),
+    radial-gradient(circle at 90% 12%,rgba(180,198,217,.08),transparent 20%);
+}
+
+/* ===== Login ===== */
+body.punto-azul-staff .login{
+  background:
+    radial-gradient(circle at 50% 20%,rgba(31,108,181,.28),transparent 34%),
+    linear-gradient(145deg,#02050a,#071629 58%,#02050a)!important;
+}
+body.punto-azul-staff .login-card,
+body.punto-azul-staff .loginbox{
+  background:linear-gradient(145deg,rgba(14,25,39,.98),rgba(5,10,17,.98))!important;
+  color:var(--pa-text)!important;
+  border:1px solid rgba(205,215,226,.38)!important;
+  box-shadow:0 28px 80px rgba(0,0,0,.58),0 0 34px rgba(33,104,171,.13)!important;
+}
+body.punto-azul-staff .login-card h1,
+body.punto-azul-staff .loginbox h1{
+  color:#f3f7fb!important;
+  text-shadow:0 2px 16px rgba(49,129,204,.20);
+}
+body.punto-azul-staff .login-card p,
+body.punto-azul-staff .loginbox p{color:var(--pa-muted)!important}
+body.punto-azul-staff .field{
+  background:#07101a!important;
+  color:#f1f5f9!important;
+  border-color:#3b4a5a!important;
+  outline:none!important;
+}
+body.punto-azul-staff .field::placeholder{color:#778697!important}
+body.punto-azul-staff .field:focus{
+  border-color:#4d91d1!important;
+  box-shadow:0 0 0 3px rgba(48,121,190,.16)!important;
+}
+
+/* ===== Navegación superior ===== */
+body.punto-azul-staff .topbar,
+body.punto-azul-staff .top{
+  background:rgba(3,8,14,.96)!important;
+  color:#fff!important;
+  border-bottom:1px solid rgba(194,207,220,.24)!important;
+  box-shadow:0 8px 28px rgba(0,0,0,.28)!important;
+  backdrop-filter:blur(15px);
+}
+body.punto-azul-staff .brand strong,
+body.punto-azul-staff .top b{color:#f5f7fa!important}
+body.punto-azul-staff .brand small,
+body.punto-azul-staff .top small{color:#9eabba!important}
+body.punto-azul-staff .user strong,
+body.punto-azul-staff .live{color:#91caff!important}
+body.punto-azul-staff .logout,
+body.punto-azul-staff .top .btn{
+  background:#101a26!important;
+  color:#edf3f8!important;
+  border:1px solid #3b4958!important;
+}
+
+/* ===== Botones principales ===== */
+body.punto-azul-staff .btn-primary,
+body.punto-azul-staff .login-btn,
+body.punto-azul-staff .primary,
+body.punto-azul-staff .refresh,
+body.punto-azul-staff .accept{
+  background:linear-gradient(135deg,#0b315c,#1767a7)!important;
+  color:#fff!important;
+  border:1px solid rgba(215,224,233,.24)!important;
+  box-shadow:0 8px 22px rgba(18,78,137,.20)!important;
+}
+body.punto-azul-staff .btn:hover{filter:brightness(1.08)}
+
+/* ===== Tarjetas / paneles ===== */
+body.punto-azul-staff .summary-card,
+body.punto-azul-staff .stat,
+body.punto-azul-staff .metric,
+body.punto-azul-staff .status,
+body.punto-azul-staff .payment,
+body.punto-azul-staff .panel,
+body.punto-azul-staff .order,
+body.punto-azul-staff .ticket,
+body.punto-azul-staff .request,
+body.punto-azul-staff .table-wrap,
+body.punto-azul-staff .link,
+body.punto-azul-staff .empty{
+  background:linear-gradient(155deg,#101823,#090f17)!important;
+  color:#edf3f8!important;
+  border-color:#344252!important;
+  box-shadow:var(--pa-shadow)!important;
+}
+body.punto-azul-staff .summary-card span,
+body.punto-azul-staff .stat span,
+body.punto-azul-staff .metric span,
+body.punto-azul-staff .meta,
+body.punto-azul-staff .updated,
+body.punto-azul-staff .payment span,
+body.punto-azul-staff .request small,
+body.punto-azul-staff .payment-title{
+  color:var(--pa-muted)!important;
+}
+body.punto-azul-staff .summary-card b,
+body.punto-azul-staff .stat b,
+body.punto-azul-staff .metric b,
+body.punto-azul-staff .amount,
+body.punto-azul-staff .account-total{
+  color:#8cc8ff!important;
+}
+
+/* ===== Meseros ===== */
+body.punto-azul-staff .order.new{border-left-color:#aeb9c5!important}
+body.punto-azul-staff .order.mine{border-left-color:#2b78bb!important}
+body.punto-azul-staff .order.late{border-left-color:#cf4b45!important}
+body.punto-azul-staff .timer{
+  background:#172332!important;
+  color:#eaf2f9!important;
+}
+body.punto-azul-staff .notes{
+  background:#132338!important;
+  color:#dbe7f2!important;
+  border:1px solid #324a61!important;
+}
+body.punto-azul-staff .prep{background:#102b43!important;color:#bfe3ff!important}
+body.punto-azul-staff .ready{background:#556472!important;color:#fff!important}
+body.punto-azul-staff .delivered{background:#123657!important;color:#d8edff!important}
+body.punto-azul-staff .paid{background:#02050a!important;color:#fff!important;border:1px solid #667687!important}
+body.punto-azul-staff .cash{background:#145386!important;color:#fff!important}
+body.punto-azul-staff .cardpay{background:#1d68a4!important;color:#fff!important}
+body.punto-azul-staff .transfer{background:#405b78!important;color:#fff!important}
+body.punto-azul-staff .badge,
+body.punto-azul-staff .connection{
+  background:#061321!important;
+  color:#c8d9e8!important;
+  border:1px solid #3a4b5c!important;
+}
+body.punto-azul-staff .connection.live{background:#12466f!important;color:#fff!important}
+
+/* ===== Cocina ===== */
+body.punto-azul-staff .ticket{border-color:#497da8!important}
+body.punto-azul-staff .ticket.prep{border-color:#8798a9!important}
+body.punto-azul-staff .ticket.ready{border-color:#397eb8!important;opacity:1!important}
+body.punto-azul-staff .ticket-head,
+body.punto-azul-staff .ticket.prep .ticket-head,
+body.punto-azul-staff .ticket.ready .ticket-head{
+  background:linear-gradient(135deg,#132339,#0b1725)!important;
+  color:#eef4f9!important;
+}
+body.punto-azul-staff .table{color:#98cdf9!important}
+body.punto-azul-staff .qty{background:#0a2742!important;color:#fff!important}
+body.punto-azul-staff .prep-btn{
+  background:linear-gradient(135deg,#0c4776,#1768a6)!important;
+  color:#fff!important;
+}
+body.punto-azul-staff .ready-btn{
+  background:linear-gradient(135deg,#637181,#8795a5)!important;
+  color:#fff!important;
+}
+body.punto-azul-staff .done-label{color:#8dcbff!important}
+
+/* ===== Caja ===== */
+body.punto-azul-staff .filters label{color:#a8b5c2!important}
+body.punto-azul-staff .filters input{
+  background:#09111a!important;
+  color:#edf3f8!important;
+  border-color:#364656!important;
+}
+body.punto-azul-staff table{color:#eaf0f6!important}
+body.punto-azul-staff th{
+  background:#06111d!important;
+  color:#dfe9f2!important;
+  border-bottom-color:#3b4b5c!important;
+}
+body.punto-azul-staff td{border-bottom-color:#273646!important}
+body.punto-azul-staff .method{
+  background:#12324d!important;
+  color:#bfe2ff!important;
+}
+body.punto-azul-staff .ticket.btn,
+body.punto-azul-staff button.ticket{
+  background:#263342!important;
+  color:#e9eef3!important;
+  border:1px solid #4a5968!important;
+}
+body.punto-azul-staff .account-count{
+  background:#172231!important;
+  color:#c8d4df!important;
+}
+
+/* ===== Dueño ===== */
+body.punto-azul-staff .status.new{border-left-color:#aeb8c2!important}
+body.punto-azul-staff .status.prep{border-left-color:#4f82ac!important}
+body.punto-azul-staff .status.ready{border-left-color:#2c79b9!important}
+body.punto-azul-staff .status.delivered{border-left-color:#7791aa!important}
+body.punto-azul-staff .panel h3{
+  background:#07131f!important;
+  color:#e7eef5!important;
+  border-bottom:1px solid #344252!important;
+}
+body.punto-azul-staff .alert{border-bottom-color:#2f3d4c!important}
+body.punto-azul-staff .alert strong{color:#ff8e87!important}
+body.punto-azul-staff .ok{color:#91cfff!important}
+body.punto-azul-staff .link{
+  text-decoration:none!important;
+  color:#edf3f8!important;
+  transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease!important;
+}
+body.punto-azul-staff .link:hover{
+  border-color:#4d8dc7!important;
+  box-shadow:0 14px 35px rgba(23,92,153,.17)!important;
+}
+
+/* ===== Detalles comunes ===== */
+body.punto-azul-staff .items,
+body.punto-azul-staff .items li{border-color:#2d3b49!important}
+body.punto-azul-staff h1,
+body.punto-azul-staff h2,
+body.punto-azul-staff h3{color:#f1f5f9}
+body.punto-azul-staff .section-title h2{color:#eaf1f7!important}
+body.punto-azul-staff .punto-azul-panel-mark{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  margin-left:8px;
+  padding:4px 9px;
+  border-radius:999px;
+  border:1px solid rgba(197,210,223,.28);
+  background:rgba(16,48,78,.72);
+  color:#dce9f4;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.08em;
+  vertical-align:middle;
+}
+body.punto-azul-staff .punto-azul-panel-mark::before{
+  content:"";
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:#2a7fc5;
+  box-shadow:0 0 12px rgba(64,156,232,.72);
+}
+
+@media(max-width:700px){
+  body.punto-azul-staff .punto-azul-panel-mark{display:none}
+}
+
+@media print{
+  body.punto-azul-staff{background:#fff!important;color:#000!important}
+}
