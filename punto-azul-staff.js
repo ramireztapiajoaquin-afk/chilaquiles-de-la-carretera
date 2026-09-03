@@ -50,6 +50,20 @@
     links.insertBefore(a,links.firstChild);
   }
 
+  function ensurePurchasesProLink(){
+    if(!path.endsWith('/dueno.html'))return;
+    const links=document.querySelector('.links');
+    if(!links || links.querySelector('[data-compras-pro-link]'))return;
+    const a=document.createElement('a');
+    a.className='link';
+    a.href='compras-pro.html';
+    a.dataset.comprasProLink='1';
+    a.innerHTML='<span>🛒</span>Compras PRO';
+    const inventory=links.querySelector('[data-inventario-pro-link]');
+    if(inventory && inventory.nextSibling)links.insertBefore(a,inventory.nextSibling);
+    else links.appendChild(a);
+  }
+
   function forceBrand(){
     replaceText(document.body);
     ['restaurantName','restaurant'].forEach(id=>{
@@ -67,6 +81,7 @@
       brand.appendChild(mark);
     }
     ensureInventoryProLink();
+    ensurePurchasesProLink();
   }
 
   if(document.readyState==='loading'){
