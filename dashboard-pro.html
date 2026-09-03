@@ -61,5 +61,6 @@ function renderWaiters(paid,staffMap){const map=new Map();paid.forEach(o=>{const
 function renderActivity(paid,staffMap){const rows=[...paid].sort((a,b)=>new Date(b.cobrado_at)-new Date(a.cobrado_at)).slice(0,8);$('activity').innerHTML=rows.length?rows.map(o=>`<div class="event"><div class="time">${new Date(o.cobrado_at).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'})}</div><div><b>Mesa ${esc(o.numero_mesa)}</b><small>${esc(staffMap.get(o.mesero_id)||'Personal')} · ${esc(o.forma_pago||'pago')}</small></div><b>${money(Number(o.total||0)+Number(o.propina||0))}</b></div>`).join(''):'<div class="empty">Sin actividad reciente.</div>'}
 $('enter').addEventListener('click',signIn);$('password').addEventListener('keydown',e=>{if(e.key==='Enter')signIn()});$('refresh').addEventListener('click',load);$('period').addEventListener('change',load);$('date').addEventListener('change',load);$('exit').addEventListener('click',async()=>{await sb.auth.signOut();location.reload()});$('date').value=localToday();setClock();setInterval(setClock,1000);setInterval(()=>{if(staff)load()},60000);sb.auth.getSession().then(({data})=>{if(data.session)openApp().catch(e=>msg(e.message))});
 </script>
+<script src="dashboard-decisiones-pro.js?v=1"></script>
 </body>
 </html>
