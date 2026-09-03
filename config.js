@@ -8,6 +8,44 @@ window.APP_CONFIG = {
   VOICE_BUCKET: "menu-voice"
 };
 
+// Arranque inmediato de Punto Azul en el menú público.
+// Evita que dispositivos móviles alcancen a pintar por unos segundos el logo/nombre anterior
+// mientras terminan de cargar la hoja de tema y el branding animado.
+(function preventLegacyBrandFlash(){
+  const path=(location.pathname||'').toLowerCase();
+  const isPublicMenu=path==='/' || path.endsWith('/index.html');
+  if(!isPublicMenu)return;
+
+  const style=document.createElement('style');
+  style.id='puntoAzulBootGuard';
+  style.textContent=`
+    #premiumCover{
+      background:radial-gradient(circle at 50% 15%,rgba(34,108,180,.28),transparent 38%),linear-gradient(155deg,#020408 0%,#071426 48%,#03060b 100%)!important;
+      color:#f4f7fb!important;
+    }
+    #premiumLogo{display:none!important}
+    #premiumCard,.premium-card{
+      background:linear-gradient(145deg,rgba(6,15,28,.92),rgba(3,7,13,.90))!important;
+      border-color:rgba(206,216,227,.40)!important;
+    }
+    #premiumTitle{color:#f2f5f8!important;text-shadow:0 2px 18px rgba(58,132,203,.24)!important}
+    #premiumSubtitle,.premium-note{color:#b9c4d0!important}
+    .premium-kicker{color:#cbd3dc!important}
+    .premium-chip{color:#e8edf3!important;background:rgba(10,35,64,.66)!important;border-color:rgba(193,205,217,.24)!important}
+    .premium-enter{background:linear-gradient(135deg,#123e6d,#1f67a8 56%,#76889b 145%)!important;color:#fff!important;border:1px solid rgba(222,230,238,.75)!important}
+  `;
+  document.head.appendChild(style);
+
+  const title=document.getElementById('premiumTitle');
+  if(title)title.textContent='Punto Azul Restaurante';
+  const subtitle=document.getElementById('premiumSubtitle');
+  if(subtitle)subtitle.textContent='Cocina contemporánea, servicio ágil y una experiencia con estilo.';
+  const kicker=document.querySelector('.premium-kicker');
+  if(kicker)kicker.textContent='Menú digital premium';
+  const note=document.querySelector('.premium-note');
+  if(note)note.textContent='Toca para entrar al menú completo';
+})();
+
 // Seguridad adicional: el panel de Meseros es exclusivo para personal con rol "mesero".
 // Esto evita que un Administrador aparezca como quien tomó una orden.
 (function enforceMeseroOnlyPanel(){
@@ -177,14 +215,14 @@ window.APP_CONFIG = {
   if(!document.querySelector('link[data-punto-azul-theme]')){
     const link=document.createElement('link');
     link.rel='stylesheet';
-    link.href='punto-azul-theme.css?v=2';
+    link.href='punto-azul-theme.css?v=3';
     link.dataset.puntoAzulTheme='1';
     document.head.appendChild(link);
   }
 
   if(!document.querySelector('script[data-punto-azul-brand]')){
     const script=document.createElement('script');
-    script.src='punto-azul-brand.js?v=2';
+    script.src='punto-azul-brand.js?v=3';
     script.defer=true;
     script.dataset.puntoAzulBrand='1';
     document.head.appendChild(script);
