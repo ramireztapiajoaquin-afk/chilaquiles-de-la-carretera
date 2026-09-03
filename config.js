@@ -81,3 +81,13 @@ window.APP_CONFIG = {
 
   window.addEventListener('pageshow',()=>setTimeout(verifyRole,0));
 })();
+
+// Carga el módulo del video final de pago tanto en Administración como en el menú del cliente.
+(function loadPaymentFlowModule(){
+  if(document.querySelector('script[data-payment-flow]'))return;
+  const script=document.createElement('script');
+  script.src='payment-flow.js?v=1';
+  script.defer=true;
+  script.dataset.paymentFlow='1';
+  document.head.appendChild(script);
+})();
