@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inventario PRO · Punto Azul</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+<style>
+:root{--navy:#06182b;--blue:#0e4f88;--blue2:#1765a4;--silver:#c7d0d9;--ink:#142333;--muted:#6d7b88;--line:#d9e1e8;--bg:#eef3f7;--ok:#17734a;--warn:#b97910;--danger:#a92b25;--white:#fff}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 20% 0,#e6f0f8 0,transparent 32%),var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}.hidden{display:none!important}button,input,select{font:inherit}.login{min-height:100vh;display:grid;place-items:center;padding:20px;background:radial-gradient(circle at 50% 15%,rgba(38,112,180,.24),transparent 35%),linear-gradient(145deg,#02060c,#07182c 56%,#02050a)}.login-card{width:min(430px,100%);background:linear-gradient(180deg,#fff,#f4f7fa);border:1px solid #aebdcb;border-radius:24px;padding:28px;box-shadow:0 28px 80px #0008}.logo-orb{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;margin-bottom:14px;background:radial-gradient(circle at 35% 30%,#4a93cf,#0e4f88 48%,#06182b 80%);color:#fff;font-weight:950;box-shadow:inset 0 0 0 5px #d6dde4,0 10px 28px #0e4f8840}.login-card h1{margin:0 0 5px}.login-card p{color:var(--muted);margin:0 0 18px}.field{width:100%;padding:13px 14px;border:1px solid #b9c7d3;border-radius:12px;background:#fff;margin:6px 0}.btn{border:0;border-radius:12px;padding:11px 14px;font-weight:900;cursor:pointer}.primary{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;box-shadow:0 7px 18px #0e4f8830}.secondary{background:#e5edf3;color:#24415a}.danger{background:#fff0ef;color:var(--danger);border:1px solid #efc8c5}.ghost{background:#fff;color:var(--blue);border:1px solid #c5d2dc}.wide{width:100%}.msg{margin-top:10px;padding:10px 12px;border-radius:10px;background:#fff0ef;color:#92231d;font-size:13px}.top{position:sticky;top:0;z-index:20;background:linear-gradient(100deg,#03101e,#082947 60%,#0b477a);color:#fff;border-bottom:1px solid #ffffff24;box-shadow:0 8px 24px #00152b26}.topin{max-width:1380px;margin:auto;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:14px}.brand{display:flex;align-items:center;gap:11px}.mark{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,#55a2dc,#0e4f88 50%,#06182b 80%);border:3px solid #cbd4dd;font-size:12px;font-weight:950}.brand b{display:block}.brand small{display:block;color:#c8d5df}.top-actions{display:flex;gap:8px;flex-wrap:wrap}.top .btn{background:#ffffff18;color:#fff;border:1px solid #ffffff28}.wrap{max-width:1380px;margin:auto;padding:18px 14px 70px}.hero{display:flex;align-items:end;justify-content:space-between;gap:16px;margin:4px 0 14px}.hero h1{font-size:30px;margin:0}.hero p{margin:4px 0 0;color:var(--muted)}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.tab{border:1px solid #cbd6df;background:#fff;color:#31526c;border-radius:999px;padding:10px 15px;font-weight:900;cursor:pointer}.tab.active{background:var(--navy);color:#fff;border-color:var(--navy)}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}.metric{background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:0 8px 24px #102a410c}.metric span{font-size:10px;color:var(--muted);font-weight:950;letter-spacing:.05em}.metric b{display:block;font-size:24px;color:var(--blue);margin-top:2px}.layout{display:grid;grid-template-columns:380px 1fr;gap:14px}.panel{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 8px 26px #0b263c0d}.panel-head{padding:14px 16px;background:linear-gradient(135deg,#071a2f,#0d416e);color:#fff}.panel-head h2,.panel-head h3{margin:0;font-size:17px}.panel-head p{margin:4px 0 0;color:#c6d5e1;font-size:12px}.panel-body{padding:15px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.form-grid .full{grid-column:1/-1}.label{display:block;font-size:10px;color:#687987;font-weight:950;letter-spacing:.05em;margin-bottom:4px}.control{width:100%;border:1px solid #bcc9d4;background:#fff;border-radius:11px;padding:11px 12px}.form-actions{display:flex;gap:8px;margin-top:12px}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}.search{flex:1;min-width:180px}.list{display:grid;gap:8px}.ingredient{border:1px solid var(--line);border-radius:14px;padding:12px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}.ingredient.low{border-color:#e7bd70;background:#fffaf0}.ingredient.off{opacity:.58}.ingredient h4{margin:0 0 4px}.meta{font-size:12px;color:var(--muted);line-height:1.45}.stock{font-weight:950;color:var(--ok)}.stock.low{color:var(--warn)}.amount{text-align:right}.amount b{display:block;font-size:17px}.tiny{font-size:11px;color:var(--muted)}.item-actions{display:flex;gap:6px;justify-content:flex-end;margin-top:7px}.small{padding:7px 9px;border-radius:9px;font-size:11px}.empty{text-align:center;padding:34px 15px;color:var(--muted)}.recipe-layout{display:grid;grid-template-columns:minmax(260px,.8fr) minmax(420px,1.5fr);gap:14px}.product-select{margin-bottom:12px}.product-card{border:1px solid var(--line);border-radius:15px;padding:13px;background:linear-gradient(145deg,#f8fbfd,#fff)}.product-card h3{margin:0}.recipe-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.recipe-kpi{border-radius:12px;background:#edf4f9;padding:10px;text-align:center}.recipe-kpi span{display:block;font-size:9px;font-weight:950;color:#687987}.recipe-kpi b{display:block;color:var(--blue);font-size:17px;margin-top:2px}.recipe-row{display:grid;grid-template-columns:1fr 100px 110px 38px;gap:7px;align-items:center;padding:9px 0;border-bottom:1px solid #e7edf2}.recipe-row:last-child{border-bottom:0}.recipe-row .cost{text-align:right;font-weight:900}.add-recipe{display:grid;grid-template-columns:1fr 120px auto;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}.notice{border-radius:13px;padding:11px 12px;background:#edf6ff;border:1px solid #bdd8ef;color:#315a79;font-size:12px;margin-bottom:12px}.badge{display:inline-block;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:950;background:#e7f2eb;color:var(--ok)}.badge.warn{background:#fff2d9;color:#9a6611}.badge.off{background:#eceff2;color:#6e7780}.errorbar{position:fixed;right:15px;bottom:15px;z-index:50;max-width:420px;background:#8d241f;color:#fff;padding:12px 14px;border-radius:12px;box-shadow:0 12px 34px #0004}.successbar{position:fixed;right:15px;bottom:15px;z-index:50;max-width:420px;background:#176c44;color:#fff;padding:12px 14px;border-radius:12px;box-shadow:0 12px 34px #0004}@media(max-width:980px){.metrics{grid-template-columns:repeat(2,1fr)}.layout,.recipe-layout{grid-template-columns:1fr}}@media(max-width:620px){.topin,.hero{align-items:flex-start}.topin{flex-direction:column}.hero{flex-direction:column}.metrics{grid-template-columns:1fr 1fr}.form-grid{grid-template-columns:1fr}.form-grid .full{grid-column:auto}.recipe-kpis{grid-template-columns:1fr}.recipe-row{grid-template-columns:1fr 90px}.recipe-row .cost{grid-column:1}.add-recipe{grid-template-columns:1fr}.top-actions{width:100%}.top-actions .btn{flex:1}}
+</style>
+</head>
+<body>
+<section id="login" class="login">
+  <div class="login-card">
+    <div class="logo-orb">PA</div>
+    <h1>Inventario PRO</h1>
+    <p>Insumos, recetas y costo real de platillos · Punto Azul</p>
+    <input id="email" class="field" type="email" placeholder="Correo de Administrador">
+    <input id="password" class="field" type="password" placeholder="Contraseña">
+    <button id="enter" class="btn primary wide">ENTRAR</button>
+    <div id="loginMessage"></div>
+  </div>
+</section>
+
+<main id="app" class="hidden">
+<header class="top"><div class="topin">
+  <div class="brand"><div class="mark">PA</div><div><b id="restaurantName">Punto Azul Restaurante</b><small>Inventario PRO · Insumos y Recetas</small></div></div>
+  <div class="top-actions"><button class="btn" onclick="location.href='dueno.html'">← DUEÑO</button><button id="refresh" class="btn">↻ ACTUALIZAR</button><button id="logout" class="btn">SALIR</button></div>
+</div></header>
+<div class="wrap">
+  <div class="hero"><div><h1>Control de costos e insumos</h1><p>Administra existencias reales y calcula cuánto cuesta preparar cada platillo.</p></div><div id="updated" class="tiny"></div></div>
+  <div class="tabs"><button class="tab active" data-tab="insumos">📦 INSUMOS</button><button class="tab" data-tab="recetas">🍽️ RECETAS Y COSTOS</button></div>
+  <section class="metrics">
+    <div class="metric"><span>INSUMOS ACTIVOS</span><b id="mInsumos">0</b></div>
+    <div class="metric"><span>ALERTAS DE STOCK</span><b id="mAlertas">0</b></div>
+    <div class="metric"><span>VALOR DEL INVENTARIO</span><b id="mValor">$0.00</b></div>
+    <div class="metric"><span>PLATILLOS CON RECETA</span><b id="mRecetas">0</b></div>
+  </section>
+
+  <section id="tabInsumos" class="tab-pane">
+    <div class="layout">
+      <div class="panel"><div class="panel-head"><h2 id="formTitle">➕ Nuevo insumo</h2><p>Registra costo, existencia y nivel mínimo.</p></div><div class="panel-body">
+        <input id="insumoId" type="hidden">
+        <div class="form-grid">
+          <label class="full"><span class="label">NOMBRE DEL INSUMO</span><input id="nombre" class="control" placeholder="Ej. Huevo"></label>
+          <label><span class="label">UNIDAD</span><select id="unidad" class="control"><option>pieza</option><option>kg</option><option>g</option><option>litro</option><option>ml</option><option>porción</option><option>paquete</option><option>caja</option></select></label>
+          <label><span class="label">COSTO UNITARIO</span><input id="costo" class="control" type="number" min="0" step="0.01" value="0"></label>
+          <label><span class="label">EXISTENCIA ACTUAL</span><input id="existencia" class="control" type="number" min="0" step="0.001" value="0"></label>
+          <label><span class="label">ALERTA MÍNIMA</span><input id="minimo" class="control" type="number" min="0" step="0.001" value="0"></label>
+          <label class="full"><span class="label">ESTADO</span><select id="activo" class="control"><option value="true">Activo</option><option value="false">Inactivo</option></select></label>
+        </div>
+        <div class="form-actions"><button id="saveIngredient" class="btn primary" style="flex:1">GUARDAR INSUMO</button><button id="cancelEdit" class="btn secondary hidden">CANCELAR</button></div>
+      </div></div>
+      <div class="panel"><div class="panel-head"><h2>📦 Mis insumos</h2><p>Los de stock bajo se resaltan automáticamente.</p></div><div class="panel-body">
+        <div class="toolbar"><input id="search" class="control search" placeholder="Buscar insumo…"><select id="filter" class="control" style="width:auto"><option value="all">Todos</option><option value="low">Stock bajo</option><option value="active">Activos</option><option value="inactive">Inactivos</option></select></div>
+        <div id="ingredientList" class="list"></div>
+      </div></div>
+    </div>
+  </section>
+
+  <section id="tabRecetas" class="tab-pane hidden">
+    <div class="notice">Esta etapa calcula costos y márgenes. <b>Todavía no descuenta insumos automáticamente al vender</b>; ese paso se activará después de validar tus recetas.</div>
+    <div class="recipe-layout">
+      <div class="panel"><div class="panel-head"><h2>🍽️ Seleccionar platillo</h2><p>Elige un producto del menú para construir su receta.</p></div><div class="panel-body">
+        <label><span class="label">PLATILLO</span><select id="productSelect" class="control product-select"></select></label>
+        <div id="productSummary" class="product-card"></div>
+      </div></div>
+      <div class="panel"><div class="panel-head"><h2>🧾 Receta y costo</h2><p>Cantidad de cada insumo utilizada por una porción.</p></div><div class="panel-body">
+        <div id="recipeRows"></div>
+        <div id="addRecipeBox" class="add-recipe">
+          <select id="recipeIngredient" class="control"></select>
+          <input id="recipeQty" class="control" type="number" min="0.001" step="0.001" placeholder="Cantidad">
+          <button id="addRecipe" class="btn primary">+ AGREGAR</button>
+        </div>
+      </div></div>
+    </div>
+  </section>
+</div>
+</main>
+<script>
+const SUPABASE_URL='https://wufftcheeyznuaymplyf.supabase.co';
+const SUPABASE_KEY='sb_publishable_1OgzXVDtS7aKSICG58Owtg_er1PKy2O';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+const mx=n=>Number(n||0).toLocaleString('es-MX',{style:'currency',currency:'MXN'});
+const num=v=>Math.max(0,Number(v)||0);
+let staff=null,restaurant=null,ingredients=[],categories=[],products=[],recipes=[];
+
+function toast(text,ok=true){
+  document.querySelectorAll('.errorbar,.successbar').forEach(x=>x.remove());
+  const d=document.createElement('div');d.className=ok?'successbar':'errorbar';d.textContent=text;document.body.appendChild(d);setTimeout(()=>d.remove(),3300);
+}
+function loginMsg(text){$('loginMessage').innerHTML='<div class="msg">'+esc(text)+'</div>'}
+function parsePrice(v){const s=String(v??'').replace(/[^0-9.,-]/g,'').replace(/,/g,'');return Number(s)||0}
+
+async function signIn(){
+  $('enter').disabled=true;$('enter').textContent='ENTRANDO…';
+  try{const{error}=await sb.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)throw error;await openApp()}
+  catch(e){loginMsg('No se pudo entrar: '+e.message)}finally{$('enter').disabled=false;$('enter').textContent='ENTRAR'}
+}
+async function openApp(){
+  const{data:{user}}=await sb.auth.getUser();if(!user)throw new Error('Sesión no encontrada.');
+  const{data:m,error}=await sb.from('meseros').select('id,restaurant_id,nombre,rol,activo').eq('user_id',user.id).eq('activo',true).maybeSingle();if(error)throw error;
+  if(!m||m.rol!=='admin'){await sb.auth.signOut();throw new Error('Inventario PRO requiere una cuenta de Administrador.');}
+  staff=m;
+  const{data:r,error:re}=await sb.from('restaurants').select('id,name,owner_id').eq('id',m.restaurant_id).single();if(re)throw re;restaurant=r;
+  $('restaurantName').textContent=r.name||'Punto Azul Restaurante';$('login').classList.add('hidden');$('app').classList.remove('hidden');await loadAll();
+}
+async function loadAll(){
+  if(!staff)return;
+  const rid=staff.restaurant_id;
+  const [iRes,cRes]=await Promise.all([
+    sb.from('insumos').select('*').eq('restaurant_id',rid).order('nombre'),
+    sb.from('categories').select('id,name,sort_order').eq('restaurant_id',rid).order('sort_order')
+  ]);
+  if(iRes.error)throw iRes.error;if(cRes.error)throw cRes.error;
+  ingredients=iRes.data||[];categories=cRes.data||[];
+  const catIds=categories.map(c=>c.id);products=[];
+  if(catIds.length){const{data,error}=await sb.from('products').select('id,category_id,name,price,promo_price,visible,available').in('category_id',catIds).order('sort_order');if(error)throw error;products=data||[]}
+  const productIds=products.map(p=>p.id);recipes=[];
+  if(productIds.length){const{data,error}=await sb.from('recetas').select('id,product_id,insumo_id,cantidad,updated_at').in('product_id',productIds);if(error)throw error;recipes=data||[]}
+  renderMetrics();renderIngredients();renderProductSelect();renderRecipe();$('updated').textContent='Actualizado: '+new Date().toLocaleTimeString('es-MX');
+}
+function renderMetrics(){
+  const active=ingredients.filter(i=>i.activo!==false),low=active.filter(i=>num(i.existencia)<=num(i.stock_minimo));
+  const value=active.reduce((a,i)=>a+num(i.existencia)*num(i.costo_unitario),0),withRecipe=new Set(recipes.map(r=>r.product_id)).size;
+  $('mInsumos').textContent=active.length;$('mAlertas').textContent=low.length;$('mValor').textContent=mx(value);$('mRecetas').textContent=withRecipe;
+}
+function filteredIngredients(){
+  const q=$('search').value.trim().toLowerCase(),f=$('filter').value;
+  return ingredients.filter(i=>{
+    if(q&&!String(i.nombre).toLowerCase().includes(q))return false;
+    if(f==='low'&&!(i.activo!==false&&num(i.existencia)<=num(i.stock_minimo)))return false;
+    if(f==='active'&&i.activo===false)return false;
+    if(f==='inactive'&&i.activo!==false)return false;
+    return true;
+  });
+}
+function renderIngredients(){
+  const rows=filteredIngredients();
+  $('ingredientList').innerHTML=rows.length?rows.map(i=>{
+    const low=i.activo!==false&&num(i.existencia)<=num(i.stock_minimo),value=num(i.existencia)*num(i.costo_unitario);
+    return `<article class="ingredient ${low?'low':''} ${i.activo===false?'off':''}"><div><h4>${esc(i.nombre)} ${i.activo===false?'<span class="badge off">INACTIVO</span>':low?'<span class="badge warn">STOCK BAJO</span>':'<span class="badge">OK</span>'}</h4><div class="meta"><span class="stock ${low?'low':''}">${Number(i.existencia)} ${esc(i.unidad)}</span> · mínimo ${Number(i.stock_minimo)}<br>Costo unitario: <b>${mx(i.costo_unitario)}</b></div></div><div class="amount"><b>${mx(value)}</b><span class="tiny">valor actual</span><div class="item-actions"><button class="btn ghost small" onclick="editIngredient('${i.id}')">EDITAR</button><button class="btn ${i.activo===false?'secondary':'danger'} small" onclick="toggleIngredient('${i.id}',${i.activo===false?'true':'false'})">${i.activo===false?'ACTIVAR':'DESACTIVAR'}</button></div></div></article>`
+  }).join(''):'<div class="empty">No hay insumos con este filtro.</div>';
+}
+function clearIngredientForm(){
+  $('insumoId').value='';$('nombre').value='';$('unidad').value='pieza';$('costo').value='0';$('existencia').value='0';$('minimo').value='0';$('activo').value='true';$('formTitle').textContent='➕ Nuevo insumo';$('cancelEdit').classList.add('hidden');
+}
+function editIngredient(id){
+  const i=ingredients.find(x=>x.id===id);if(!i)return;$('insumoId').value=i.id;$('nombre').value=i.nombre;$('unidad').value=i.unidad;$('costo').value=i.costo_unitario;$('existencia').value=i.existencia;$('minimo').value=i.stock_minimo;$('activo').value=String(i.activo!==false);$('formTitle').textContent='✏️ Editar insumo';$('cancelEdit').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'});
+}
+async function saveIngredient(){
+  const id=$('insumoId').value,name=$('nombre').value.trim();if(!name)return toast('Escribe el nombre del insumo.',false);
+  const payload={restaurant_id:staff.restaurant_id,nombre:name,unidad:$('unidad').value,existencia:num($('existencia').value),stock_minimo:num($('minimo').value),costo_unitario:num($('costo').value),activo:$('activo').value==='true',updated_at:new Date().toISOString()};
+  $('saveIngredient').disabled=true;
+  try{let error;if(id)({error}=await sb.from('insumos').update(payload).eq('id',id).eq('restaurant_id',staff.restaurant_id));else({error}=await sb.from('insumos').insert(payload));if(error)throw error;toast(id?'Insumo actualizado.':'Insumo creado.');clearIngredientForm();await loadAll()}
+  catch(e){toast('No se pudo guardar: '+e.message,false)}finally{$('saveIngredient').disabled=false}
+}
+async function toggleIngredient(id,active){
+  try{const{error}=await sb.from('insumos').update({activo:active,updated_at:new Date().toISOString()}).eq('id',id).eq('restaurant_id',staff.restaurant_id);if(error)throw error;toast(active?'Insumo activado.':'Insumo desactivado.');await loadAll()}catch(e){toast('No se pudo cambiar el estado: '+e.message,false)}
+}
+function productLabel(p){const c=categories.find(x=>x.id===p.category_id);return `${c?.name||'Menú'} · ${p.name}`}
+function renderProductSelect(){
+  const current=$('productSelect').value;$('productSelect').innerHTML=products.length?products.map(p=>`<option value="${p.id}">${esc(productLabel(p))}</option>`).join(''):'<option value="">No hay productos</option>';if(current&&products.some(p=>p.id===current))$('productSelect').value=current;
+  $('recipeIngredient').innerHTML=ingredients.filter(i=>i.activo!==false).length?ingredients.filter(i=>i.activo!==false).map(i=>`<option value="${i.id}">${esc(i.nombre)} · ${esc(i.unidad)}</option>`).join(''):'<option value="">Primero crea un insumo</option>';
+}
+function selectedProduct(){return products.find(p=>p.id===$('productSelect').value)||products[0]||null}
+function renderRecipe(){
+  const p=selectedProduct();if(!p){$('productSummary').innerHTML='<div class="empty">No hay productos en el menú.</div>';$('recipeRows').innerHTML='';return}
+  if($('productSelect').value!==p.id)$('productSelect').value=p.id;
+  const rows=recipes.filter(r=>r.product_id===p.id),price=parsePrice(p.promo_price)||parsePrice(p.price),cost=rows.reduce((a,r)=>{const i=ingredients.find(x=>x.id===r.insumo_id);return a+num(r.cantidad)*num(i?.costo_unitario)},0),food=price>0?cost/price*100:0,margin=price-cost;
+  $('productSummary').innerHTML=`<h3>${esc(p.name)}</h3><div class="meta">Precio actual: <b>${mx(price)}</b> · ${rows.length} insumo${rows.length===1?'':'s'} en receta</div><div class="recipe-kpis"><div class="recipe-kpi"><span>COSTO RECETA</span><b>${mx(cost)}</b></div><div class="recipe-kpi"><span>COSTO %</span><b>${food.toFixed(1)}%</b></div><div class="recipe-kpi"><span>MARGEN EST.</span><b>${mx(margin)}</b></div></div>`;
+  $('recipeRows').innerHTML=rows.length?rows.map(r=>{const i=ingredients.find(x=>x.id===r.insumo_id),line=num(r.cantidad)*num(i?.costo_unitario);return `<div class="recipe-row"><div><b>${esc(i?.nombre||'Insumo')}</b><div class="tiny">${mx(i?.costo_unitario||0)} por ${esc(i?.unidad||'unidad')}</div></div><input class="control" type="number" min="0.001" step="0.001" value="${Number(r.cantidad)}" onchange="updateRecipeQty('${r.id}',this.value)"><div class="cost">${mx(line)}</div><button class="btn danger small" title="Quitar" onclick="removeRecipe('${r.id}')">×</button></div>`}).join(''):'<div class="empty">Este platillo todavía no tiene receta. Agrega su primer insumo abajo.</div>';
+}
+async function addRecipe(){
+  const p=selectedProduct(),iid=$('recipeIngredient').value,qty=Number($('recipeQty').value);if(!p)return toast('Selecciona un platillo.',false);if(!iid)return toast('Crea o selecciona un insumo.',false);if(!(qty>0))return toast('Escribe una cantidad mayor a cero.',false);
+  try{const{error}=await sb.from('recetas').upsert({product_id:p.id,insumo_id:iid,cantidad:qty,updated_at:new Date().toISOString()},{onConflict:'product_id,insumo_id'});if(error)throw error;$('recipeQty').value='';toast('Ingrediente agregado a la receta.');await loadAll()}catch(e){toast('No se pudo agregar: '+e.message,false)}
+}
+async function updateRecipeQty(id,value){const qty=Number(value);if(!(qty>0))return toast('La cantidad debe ser mayor a cero.',false);try{const{error}=await sb.from('recetas').update({cantidad:qty,updated_at:new Date().toISOString()}).eq('id',id);if(error)throw error;toast('Cantidad actualizada.');await loadAll()}catch(e){toast('No se pudo actualizar: '+e.message,false)}}
+async function removeRecipe(id){try{const{error}=await sb.from('recetas').delete().eq('id',id);if(error)throw error;toast('Ingrediente retirado de la receta.');await loadAll()}catch(e){toast('No se pudo retirar: '+e.message,false)}}
+function switchTab(name){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));$('tabInsumos').classList.toggle('hidden',name!=='insumos');$('tabRecetas').classList.toggle('hidden',name!=='recetas');if(name==='recetas')renderRecipe()}
+
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
+$('enter').onclick=signIn;$('password').onkeydown=e=>{if(e.key==='Enter')signIn()};$('saveIngredient').onclick=saveIngredient;$('cancelEdit').onclick=clearIngredientForm;$('search').oninput=renderIngredients;$('filter').onchange=renderIngredients;$('productSelect').onchange=renderRecipe;$('addRecipe').onclick=addRecipe;$('refresh').onclick=()=>loadAll().catch(e=>toast(e.message,false));$('logout').onclick=async()=>{await sb.auth.signOut();location.reload()};
+sb.auth.getSession().then(({data})=>{if(data.session)openApp().catch(async e=>{await sb.auth.signOut();loginMsg(e.message)})});
+</script>
+</body>
+</html>
