@@ -13,6 +13,15 @@
     document.head.appendChild(script);
   }
 
+  // Caja PRO amplía únicamente el historial/corte para mostrar consumo, propina y total cobrado.
+  if(path.endsWith('/caja.html') && !document.querySelector('script[data-caja-pro]')){
+    const script=document.createElement('script');
+    script.src='caja-pro.js?v=1';
+    script.defer=true;
+    script.dataset.cajaPro='1';
+    document.head.appendChild(script);
+  }
+
   document.body.classList.add('punto-azul-staff');
   document.title=document.title.replace(/Chilaquiles de la Carretera/gi,'Punto Azul Restaurante');
 
