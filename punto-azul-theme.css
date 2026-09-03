@@ -180,6 +180,45 @@ body.punto-azul-theme .public-voice-play.playing{
   background:#123f6c;
 }
 
+/* Botón premium de música: reutiliza el control original del menú */
+body.punto-azul-theme .music-toggle.punto-azul-music-btn{
+  position:fixed;
+  left:18px;
+  right:auto;
+  bottom:18px;
+  z-index:80;
+  display:inline-flex!important;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  width:auto;
+  min-width:118px;
+  min-height:48px;
+  padding:0 18px;
+  border:1px solid rgba(218,226,235,.58);
+  border-radius:999px;
+  font-size:14px;
+  font-weight:800;
+  letter-spacing:.02em;
+  background:linear-gradient(135deg,rgba(5,19,35,.96),rgba(11,62,111,.96) 58%,rgba(45,105,158,.96));
+  color:#f8fbff;
+  box-shadow:0 12px 32px rgba(0,0,0,.42),0 0 20px rgba(42,123,197,.22),inset 0 1px 0 rgba(255,255,255,.14);
+  backdrop-filter:blur(12px);
+  cursor:pointer;
+  transition:transform .18s ease,filter .18s ease,box-shadow .18s ease;
+}
+body.punto-azul-theme .music-toggle.punto-azul-music-btn:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.08);
+}
+body.punto-azul-theme .music-toggle.punto-azul-music-btn.is-playing{
+  background:linear-gradient(135deg,#0b315c,#1d6daf 60%,#8292a3 150%);
+  box-shadow:0 12px 32px rgba(0,0,0,.42),0 0 26px rgba(60,144,222,.30),inset 0 1px 0 rgba(255,255,255,.18);
+}
+body.punto-azul-theme .music-hint{
+  color:#c4ced8;
+}
+
 /* Los modales siguen legibles aunque el tema principal sea oscuro */
 body.punto-azul-theme .cart-modal,
 body.punto-azul-theme .order-tracking,
@@ -201,8 +240,17 @@ body.punto-azul-theme .modal-card{
   body.punto-azul-theme .premium-card{
     border-radius:18px;
   }
+  body.punto-azul-theme .music-toggle.punto-azul-music-btn{
+    left:12px;
+    bottom:12px;
+    min-width:108px;
+    min-height:46px;
+    padding:0 15px;
+    font-size:13px;
+  }
 }
 
 @media(prefers-reduced-motion:reduce){
   body.punto-azul-theme .premium-enter{transition:none!important}
+  body.punto-azul-theme .music-toggle.punto-azul-music-btn{transition:none!important}
 }
