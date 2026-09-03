@@ -91,3 +91,27 @@ window.APP_CONFIG = {
   script.dataset.paymentFlow='1';
   document.head.appendChild(script);
 })();
+
+// Branding Punto Azul: se carga como capa externa SOLO en el menú público.
+// No altera la lógica de carga del menú ni las operaciones con Supabase.
+(function loadPuntoAzulBranding(){
+  const path=(location.pathname||'').toLowerCase();
+  const isPublicMenu=path==='/' || path.endsWith('/index.html');
+  if(!isPublicMenu)return;
+
+  if(!document.querySelector('link[data-punto-azul-theme]')){
+    const link=document.createElement('link');
+    link.rel='stylesheet';
+    link.href='punto-azul-theme.css?v=2';
+    link.dataset.puntoAzulTheme='1';
+    document.head.appendChild(link);
+  }
+
+  if(!document.querySelector('script[data-punto-azul-brand]')){
+    const script=document.createElement('script');
+    script.src='punto-azul-brand.js?v=2';
+    script.defer=true;
+    script.dataset.puntoAzulBrand='1';
+    document.head.appendChild(script);
+  }
+})();
