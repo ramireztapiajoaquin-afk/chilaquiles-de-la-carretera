@@ -268,3 +268,92 @@ function enableOpenTableCheckout(){
 }
 
 document.addEventListener('DOMContentLoaded',enableOpenTableCheckout,{once:true});
+
+// Pantalla final premium del cliente cuando la cuenta ya fue cobrada.
+function enableClientPaymentThankYou(){
+  const panel=document.getElementById('orderTracking');
+  if(!panel)return;
+
+  window.setTimeout(()=>{
+    if(typeof window.renderOrderTracking!=='function')return;
+    const originalRender=window.renderOrderTracking;
+    if(originalRender.__paymentThankYou)return;
+
+    const wrapped=function(order){
+      originalRender(order);
+
+      const paid=order?.estado==='cobrado';
+      const steps=document.getElementById('trackingSteps');
+      const actions=panel.querySelector('.service-actions');
+      const runningTotal=document.getElementById('tableAccountTotal');
+      let thankYou=document.getElementById('paymentThankYou');
+
+      if(!paid){
+        if(thankYou)thankYou.classList.add('hidden');
+        if(steps)steps.classList.remove('hidden');
+        if(actions && order?.estado!=='cancelado')actions.classList.remove('hidden');
+        if(runningTotal && order?.estado!=='cancelado')runningTotal.classList.remove('hidden');
+        return;
+      }
+
+      sessionStorage.removeItem('trackingPanelDismissed');
+      panel.classList.remove('hidden');
+      if(steps)steps.classList.add('hidden');
+      if(actions)actions.classList.add('hidden');
+      if(runningTotal)runningTotal.classList.add('hidden');
+
+      if(!thankYou){
+        thankYou=document.createElement('div');
+        thankYou.id='paymentThankYou';
+        panel.appendChild(thankYou);
+      }
+
+      const total=Number(order?.total_cuenta||0).toLocaleString('es-MX',{style:'currency',currency:'MXN'});
+      const methodLabels={efectivo:'Efectivo',tarjeta:'Tarjeta',transferencia:'Transferencia'};
+      const payment=methodLabels[String(order?.forma_pago||'').toLowerCase()]||'Pago confirmado';
+
+      thankYou.classList.remove('hidden');
+      thankYou.innerHTML=`
+        <div style="text-align:center;padding:8px 2px 4px">
+          <div style="width:78px;height:78px;border-radius:50%;margin:0 auto 13px;background:#176c44;color:#fff;display:grid;place-items:center;font-size:42px;font-weight:900;box-shadow:0 10px 28px rgba(23,108,68,.28);animation:clientPaidPop .55s ease both">✓</div>
+          <div style="font-size:12px;font-weight:950;letter-spacing:.11em;color:#176c44">PAGO CONFIRMADO</div>
+          <h2 style="font-size:27px;line-height:1.05;margin:8px 0 8px;color:#211d18">🌶️ ¡Gracias por visitarnos!</h2>
+          <p style="margin:0 auto 16px;max-width:460px;color:#675f57;font-size:14px;line-height:1.55">Esperamos que hayas disfrutado cada bocado y que tu experiencia en <b>Chilaquiles de la Carretera</b> haya sido tan buena como nuestro sabor.</p>
+          <div style="background:linear-gradient(145deg,#fff8e6,#fff);border:1px solid #ead7a0;border-radius:18px;padding:14px;margin:0 0 14px;box-shadow:0 8px 22px rgba(0,0,0,.06)">
+            <div style="font-size:11px;font-weight:900;letter-spacing:.08em;color:#756d64">TOTAL PAGADO</div>
+            <div style="font-size:32px;font-weight:950;color:#176c44;margin:2px 0">${total}</div>
+            <div style="font-size:13px;color:#756d64">${payment} · Mesa ${eh(order?.numero_mesa||'')}</div>
+          </div>
+          <div style="font-size:14px;line-height:1.55;color:#514a43;margin:0 4px 16px">💚 Fue un gusto atenderte.<br>🚗 Que tengas un excelente camino.<br>🌶️ Siempre hay un buen momento para volver por unos chilaquiles.</div>
+          <div style="font-weight:950;color:#211d18;margin-bottom:4px">¡Te esperamos muy pronto!</div>
+          <div style="font-size:12px;color:#81776d;font-style:italic;margin-bottom:17px">Sabor que se disfruta. Momentos que se recuerdan.</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
+            <button type="button" data-paid-menu style="border:0;border-radius:14px;padding:13px 10px;background:#176c44;color:#fff;font-weight:900;cursor:pointer">🌶️ VER MENÚ</button>
+            <button type="button" data-paid-finish style="border:1px solid #d7d0c8;border-radius:14px;padding:13px 10px;background:#fff;color:#302b26;font-weight:900;cursor:pointer">✓ FINALIZAR</button>
+          </div>
+        </div>`;
+
+      if(!document.getElementById('clientPaidAnimationStyle')){
+        const style=document.createElement('style');
+        style.id='clientPaidAnimationStyle';
+        style.textContent='@keyframes clientPaidPop{0%{transform:scale(.55);opacity:0}65%{transform:scale(1.12);opacity:1}100%{transform:scale(1)}}';
+        document.head.appendChild(style);
+      }
+
+      thankYou.querySelector('[data-paid-menu]')?.addEventListener('click',()=>{
+        panel.classList.add('hidden');
+        document.getElementById('menu')?.scrollIntoView({behavior:'smooth',block:'start'});
+      },{once:true});
+      thankYou.querySelector('[data-paid-finish]')?.addEventListener('click',()=>{
+        sessionStorage.removeItem('activeOrderId');
+        sessionStorage.removeItem('trackingPanelDismissed');
+        panel.classList.add('hidden');
+      },{once:true});
+    };
+
+    wrapped.__paymentThankYou=true;
+    window.renderOrderTracking=wrapped;
+  },0);
+}
+
+document.addEventListener('DOMContentLoaded',enableClientPaymentThankYou,{once:true});
