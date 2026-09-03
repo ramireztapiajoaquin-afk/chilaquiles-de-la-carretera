@@ -82,6 +82,22 @@
     else links.insertBefore(a,links.firstChild);
   }
 
+  function ensureProposalProLink(){
+    if(!path.endsWith('/dueno.html'))return;
+    const links=document.querySelector('.links');
+    if(!links || links.querySelector('[data-propuesta-pro-link]'))return;
+    const a=document.createElement('a');
+    a.className='link';
+    a.href='propuesta-comercial-pro.html';
+    a.dataset.propuestaProLink='1';
+    a.innerHTML='<span>📄</span>Propuesta Comercial PRO';
+    const presentation=links.querySelector('[data-presentacion-pro-link]');
+    const dashboard=links.querySelector('[data-dashboard-pro-link]');
+    const anchor=presentation||dashboard;
+    if(anchor && anchor.nextSibling)links.insertBefore(a,anchor.nextSibling);
+    else links.insertBefore(a,links.firstChild);
+  }
+
   function ensureInventoryProLink(){
     if(!path.endsWith('/dueno.html'))return;
     const links=document.querySelector('.links');
@@ -91,9 +107,10 @@
     a.href='inventario-pro.html';
     a.dataset.inventarioProLink='1';
     a.innerHTML='<span>📦</span>Inventario PRO';
+    const proposal=links.querySelector('[data-propuesta-pro-link]');
     const presentation=links.querySelector('[data-presentacion-pro-link]');
     const dashboard=links.querySelector('[data-dashboard-pro-link]');
-    const anchor=presentation||dashboard;
+    const anchor=proposal||presentation||dashboard;
     if(anchor && anchor.nextSibling)links.insertBefore(a,anchor.nextSibling);
     else links.insertBefore(a,links.firstChild);
   }
@@ -158,6 +175,7 @@
     }
     ensureDashboardProLink();
     ensurePresentationProLink();
+    ensureProposalProLink();
     ensureInventoryProLink();
     ensurePurchasesProLink();
     ensureCrmProLink();
