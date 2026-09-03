@@ -89,3 +89,26 @@ function activateContinuousVideos(){
     videos.forEach(v => io.observe(v));
   }
 }
+
+// En el menú público, un pedido confirmado NO cierra la mesa.
+// Después de cada envío vuelve a habilitar el botón para permitir consumos adicionales.
+function enableRepeatOrdering(){
+  const button=document.getElementById('confirmOrderBtn');
+  if(!button)return;
+
+  const resetAfterSuccess=()=>{
+    if(button.textContent.trim()==='PEDIDO CONFIRMADO'){
+      window.setTimeout(()=>{
+        button.disabled=false;
+        button.textContent='➕ AGREGAR OTRO PEDIDO';
+        button.setAttribute('aria-label','Agregar otro pedido a la misma mesa');
+      },700);
+    }
+  };
+
+  const observer=new MutationObserver(resetAfterSuccess);
+  observer.observe(button,{childList:true,subtree:true,characterData:true});
+  resetAfterSuccess();
+}
+
+document.addEventListener('DOMContentLoaded',enableRepeatOrdering,{once:true});
