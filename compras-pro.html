@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Compras PRO · Punto Azul</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+<style>
+:root{--navy:#06182b;--blue:#0e4f88;--blue2:#1765a4;--silver:#c7d0d9;--ink:#142333;--muted:#6d7b88;--line:#d9e1e8;--bg:#eef3f7;--ok:#17734a;--warn:#b97910;--danger:#a92b25;--white:#fff}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 20% 0,#e6f0f8 0,transparent 32%),var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}.hidden{display:none!important}button,input,select{font:inherit}.login{min-height:100vh;display:grid;place-items:center;padding:20px;background:radial-gradient(circle at 50% 15%,rgba(38,112,180,.24),transparent 35%),linear-gradient(145deg,#02060c,#07182c 56%,#02050a)}.login-card{width:min(430px,100%);background:linear-gradient(180deg,#fff,#f4f7fa);border:1px solid #aebdcb;border-radius:24px;padding:28px;box-shadow:0 28px 80px #0008}.logo-orb{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;margin-bottom:14px;background:radial-gradient(circle at 35% 30%,#4a93cf,#0e4f88 48%,#06182b 80%);color:#fff;font-weight:950;box-shadow:inset 0 0 0 5px #d6dde4,0 10px 28px #0e4f8840}.login-card h1{margin:0 0 5px}.login-card p{color:var(--muted);margin:0 0 18px}.field{width:100%;padding:13px 14px;border:1px solid #b9c7d3;border-radius:12px;background:#fff;margin:6px 0}.btn{border:0;border-radius:12px;padding:11px 14px;font-weight:900;cursor:pointer}.primary{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;box-shadow:0 7px 18px #0e4f8830}.secondary{background:#e5edf3;color:#24415a}.ghost{background:#fff;color:var(--blue);border:1px solid #c5d2dc}.wide{width:100%}.msg{margin-top:10px;padding:10px 12px;border-radius:10px;background:#fff0ef;color:#92231d;font-size:13px}.top{position:sticky;top:0;z-index:20;background:linear-gradient(100deg,#03101e,#082947 60%,#0b477a);color:#fff;border-bottom:1px solid #ffffff24;box-shadow:0 8px 24px #00152b26}.topin{max-width:1280px;margin:auto;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:14px}.brand{display:flex;align-items:center;gap:11px}.mark{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,#55a2dc,#0e4f88 50%,#06182b 80%);border:3px solid #cbd4dd;font-size:12px;font-weight:950}.brand b{display:block}.brand small{display:block;color:#c8d5df}.top-actions{display:flex;gap:8px;flex-wrap:wrap}.top .btn{background:#ffffff18;color:#fff;border:1px solid #ffffff28}.wrap{max-width:1280px;margin:auto;padding:18px 14px 70px}.hero{display:flex;align-items:end;justify-content:space-between;gap:16px;margin:4px 0 14px}.hero h1{font-size:30px;margin:0}.hero p{margin:4px 0 0;color:var(--muted)}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}.metric{background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:0 8px 24px #102a410c}.metric span{font-size:10px;color:var(--muted);font-weight:950;letter-spacing:.05em}.metric b{display:block;font-size:24px;color:var(--blue);margin-top:2px}.panel{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 8px 26px #0b263c0d;margin-bottom:14px}.panel-head{padding:14px 16px;background:linear-gradient(135deg,#071a2f,#0d416e);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:12px}.panel-head h2{margin:0;font-size:17px}.panel-head p{margin:4px 0 0;color:#c6d5e1;font-size:12px}.panel-body{padding:15px}.notice{border-radius:13px;padding:11px 12px;background:#edf6ff;border:1px solid #bdd8ef;color:#315a79;font-size:12px;margin-bottom:14px}.list{display:grid;gap:9px}.row{border:1px solid var(--line);border-radius:14px;padding:13px;display:grid;grid-template-columns:1.2fr .8fr .8fr .8fr;gap:12px;align-items:center}.row.alert{border-color:#e7bd70;background:#fffaf0}.row.critical{border-color:#e3a4a0;background:#fff4f3}.name b{display:block}.tiny{font-size:11px;color:var(--muted);line-height:1.45}.value{text-align:right}.value span{display:block;font-size:10px;color:var(--muted);font-weight:900}.value b{font-size:16px}.badge{display:inline-block;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:950;background:#e7f2eb;color:var(--ok);margin-left:6px}.badge.warn{background:#fff2d9;color:#9a6611}.badge.danger{background:#fee8e6;color:#9d2923}.badge.off{background:#eceff2;color:#6e7780}.empty{text-align:center;padding:34px 15px;color:var(--muted)}.actions{display:flex;gap:8px;flex-wrap:wrap}.successbar,.errorbar{position:fixed;right:15px;bottom:15px;z-index:50;max-width:420px;color:#fff;padding:12px 14px;border-radius:12px;box-shadow:0 12px 34px #0004}.successbar{background:#176c44}.errorbar{background:#8d241f}@media(max-width:850px){.metrics{grid-template-columns:repeat(2,1fr)}.row{grid-template-columns:1fr 1fr}.value{text-align:left}}@media(max-width:560px){.topin,.hero{align-items:flex-start;flex-direction:column}.metrics{grid-template-columns:1fr 1fr}.row{grid-template-columns:1fr}.top-actions{width:100%}.top-actions .btn{flex:1}}
+</style>
+</head>
+<body>
+<section id="login" class="login">
+  <div class="login-card">
+    <div class="logo-orb">PA</div>
+    <h1>Compras PRO</h1>
+    <p>Alertas de stock y reposición sugerida · Punto Azul</p>
+    <input id="email" class="field" type="email" placeholder="Correo de Administrador">
+    <input id="password" class="field" type="password" placeholder="Contraseña">
+    <button id="enter" class="btn primary wide">ENTRAR</button>
+    <div id="loginMessage"></div>
+  </div>
+</section>
+<main id="app" class="hidden">
+<header class="top"><div class="topin">
+  <div class="brand"><div class="mark">PA</div><div><b id="restaurantName">Punto Azul Restaurante</b><small>Compras PRO · Reposición inteligente</small></div></div>
+  <div class="top-actions"><button class="btn" onclick="location.href='dueno.html'">← DUEÑO</button><button class="btn" onclick="location.href='inventario-pro.html'">📦 INVENTARIO</button><button id="refresh" class="btn">↻ ACTUALIZAR</button><button id="logout" class="btn">SALIR</button></div>
+</div></header>
+<div class="wrap">
+  <div class="hero"><div><h1>Alertas y compras sugeridas</h1><p>Detecta faltantes antes de que afecten la operación.</p></div><div id="updated" class="tiny"></div></div>
+  <div class="notice"><b>Regla de reposición:</b> cuando la existencia llega al stock mínimo o baja de él, Compras PRO recomienda comprar lo necesario para volver a <b>2× el stock mínimo</b>. El costo es estimado usando el costo unitario registrado en Inventario PRO.</div>
+  <section class="metrics">
+    <div class="metric"><span>ALERTAS ACTIVAS</span><b id="mAlertas">0</b></div>
+    <div class="metric"><span>COMPRA SUGERIDA</span><b id="mCompra">$0.00</b></div>
+    <div class="metric"><span>INSUMOS CONTROLADOS</span><b id="mControlados">0</b></div>
+    <div class="metric"><span>PENDIENTES DE STOCK REAL</span><b id="mPendientes">0</b></div>
+  </section>
+  <section class="panel">
+    <div class="panel-head"><div><h2>🛒 Lista de compra sugerida</h2><p>Solo aparecen insumos que ya llegaron a su nivel mínimo.</p></div><div class="actions"><button id="copy" class="btn ghost">COPIAR LISTA</button></div></div>
+    <div class="panel-body"><div id="buyList" class="list"></div></div>
+  </section>
+  <section class="panel">
+    <div class="panel-head"><div><h2>📊 Estado del inventario controlado</h2><p>Existencia actual comparada contra el mínimo.</p></div></div>
+    <div class="panel-body"><div id="stockList" class="list"></div></div>
+  </section>
+  <section class="panel">
+    <div class="panel-head"><div><h2>⚙️ Insumos pendientes de existencia real</h2><p>Ya cuentan para costos de receta, pero todavía no descuentan inventario.</p></div></div>
+    <div class="panel-body"><div id="pendingList" class="list"></div></div>
+  </section>
+</div>
+</main>
+<script>
+const SUPABASE_URL='https://wufftcheeyznuaymplyf.supabase.co';
+const SUPABASE_KEY='sb_publishable_1OgzXVDtS7aKSICG58Owtg_er1PKy2O';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+const num=v=>Math.max(0,Number(v)||0);
+const mx=n=>Number(n||0).toLocaleString('es-MX',{style:'currency',currency:'MXN'});
+let staff=null,ingredients=[];
+function toast(text,ok=true){document.querySelectorAll('.successbar,.errorbar').forEach(x=>x.remove());const d=document.createElement('div');d.className=ok?'successbar':'errorbar';d.textContent=text;document.body.appendChild(d);setTimeout(()=>d.remove(),3000)}
+function loginMsg(text){$('loginMessage').innerHTML='<div class="msg">'+esc(text)+'</div>'}
+async function signIn(){$('enter').disabled=true;$('enter').textContent='ENTRANDO…';try{const{error}=await sb.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)throw error;await openApp()}catch(e){loginMsg('No se pudo entrar: '+e.message)}finally{$('enter').disabled=false;$('enter').textContent='ENTRAR'}}
+async function openApp(){const{data:{user}}=await sb.auth.getUser();if(!user)throw new Error('Sesión no encontrada.');const{data:m,error}=await sb.from('meseros').select('id,restaurant_id,nombre,rol,activo').eq('user_id',user.id).eq('activo',true).maybeSingle();if(error)throw error;if(!m||m.rol!=='admin'){await sb.auth.signOut();throw new Error('Compras PRO requiere una cuenta de Administrador.');}staff=m;const{data:r,error:re}=await sb.from('restaurants').select('id,name').eq('id',m.restaurant_id).single();if(re)throw re;$('restaurantName').textContent=r.name||'Punto Azul Restaurante';$('login').classList.add('hidden');$('app').classList.remove('hidden');await loadAll()}
+async function loadAll(){const{data,error}=await sb.from('insumos').select('id,nombre,unidad,existencia,stock_minimo,costo_unitario,activo,control_inventario').eq('restaurant_id',staff.restaurant_id).eq('activo',true).order('nombre');if(error)throw error;ingredients=data||[];render();$('updated').textContent='Actualizado: '+new Date().toLocaleTimeString('es-MX')}
+function controlled(){return ingredients.filter(i=>i.control_inventario!==false)}
+function pending(){return ingredients.filter(i=>i.control_inventario===false)}
+function alerts(){return controlled().filter(i=>num(i.stock_minimo)>0&&num(i.existencia)<=num(i.stock_minimo))}
+function suggestion(i){const min=num(i.stock_minimo),target=min*2,qty=Math.max(0,target-num(i.existencia));return{target,qty,cost:qty*num(i.costo_unitario)}}
+function state(i){const min=num(i.stock_minimo),ex=num(i.existencia);if(min<=0)return{label:'SIN MÍNIMO',cls:'off',row:''};if(ex<=min*.5)return{label:'CRÍTICO',cls:'danger',row:'critical'};if(ex<=min)return{label:'COMPRAR',cls:'warn',row:'alert'};return{label:'OK',cls:'',row:''}}
+function render(){const a=alerts(),buyTotal=a.reduce((s,i)=>s+suggestion(i).cost,0);$('mAlertas').textContent=a.length;$('mCompra').textContent=mx(buyTotal);$('mControlados').textContent=controlled().length;$('mPendientes').textContent=pending().length;
+$('buyList').innerHTML=a.length?a.map(i=>{const s=suggestion(i),st=state(i);return `<div class="row ${st.row}"><div class="name"><b>${esc(i.nombre)}<span class="badge ${st.cls}">${st.label}</span></b><div class="tiny">Actual ${Number(i.existencia)} ${esc(i.unidad)} · mínimo ${Number(i.stock_minimo)}</div></div><div class="value"><span>COMPRAR</span><b>${s.qty.toFixed(3).replace(/\.000$/,'')} ${esc(i.unidad)}</b></div><div class="value"><span>OBJETIVO</span><b>${s.target.toFixed(3).replace(/\.000$/,'')} ${esc(i.unidad)}</b></div><div class="value"><span>COSTO EST.</span><b>${mx(s.cost)}</b></div></div>`}).join(''):'<div class="empty">✅ No hay compras urgentes. Todos los insumos controlados están por encima de su stock mínimo.</div>';
+$('stockList').innerHTML=controlled().length?controlled().map(i=>{const st=state(i),pct=num(i.stock_minimo)>0?num(i.existencia)/num(i.stock_minimo):0;return `<div class="row ${st.row}"><div class="name"><b>${esc(i.nombre)}<span class="badge ${st.cls}">${st.label}</span></b><div class="tiny">Costo unitario ${mx(i.costo_unitario)} / ${esc(i.unidad)}</div></div><div class="value"><span>EXISTENCIA</span><b>${Number(i.existencia)} ${esc(i.unidad)}</b></div><div class="value"><span>MÍNIMO</span><b>${Number(i.stock_minimo)} ${esc(i.unidad)}</b></div><div class="value"><span>COBERTURA VS MÍNIMO</span><b>${num(i.stock_minimo)>0?(pct*100).toFixed(0)+'%':'—'}</b></div></div>`}).join(''):'<div class="empty">No hay insumos con control de inventario.</div>';
+$('pendingList').innerHTML=pending().length?pending().map(i=>`<div class="row"><div class="name"><b>${esc(i.nombre)}<span class="badge off">SOLO COSTO</span></b><div class="tiny">Costo registrado ${mx(i.costo_unitario)} / ${esc(i.unidad)}</div></div><div class="value"><span>EXISTENCIA REAL</span><b>Pendiente</b></div><div class="value"><span>CONTROL</span><b>No descuenta</b></div><div class="value"><span>ACCIÓN</span><b><a href="inventario-pro.html" style="color:#0e4f88">Configurar</a></b></div></div>`).join(''):'<div class="empty">✅ Todos los insumos activos ya tienen control de inventario.</div>'}
+async function copyList(){const a=alerts();if(!a.length)return toast('No hay compras sugeridas en este momento.');const lines=['PUNTO AZUL · COMPRA SUGERIDA',new Date().toLocaleString('es-MX'),''];let total=0;a.forEach(i=>{const s=suggestion(i);total+=s.cost;lines.push(`• ${i.nombre}: ${s.qty.toFixed(3).replace(/\.000$/,'')} ${i.unidad} · aprox. ${mx(s.cost)}`)});lines.push('',`TOTAL ESTIMADO: ${mx(total)}`);try{await navigator.clipboard.writeText(lines.join('\n'));toast('Lista de compra copiada.')}catch(e){toast('No se pudo copiar automáticamente.',false)}}
+$('enter').onclick=signIn;$('password').onkeydown=e=>{if(e.key==='Enter')signIn()};$('refresh').onclick=()=>loadAll().catch(e=>toast(e.message,false));$('copy').onclick=copyList;$('logout').onclick=async()=>{await sb.auth.signOut();location.reload()};sb.auth.getSession().then(({data})=>{if(data.session)openApp().catch(async e=>{await sb.auth.signOut();loginMsg(e.message)})});
+</script>
+</body>
+</html>
