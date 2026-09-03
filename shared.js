@@ -129,6 +129,7 @@ function enableKeepOrderingButton(){
   button.style.marginBottom='8px';
   button.style.minHeight='48px';
   button.addEventListener('click',()=>{
+    sessionStorage.setItem('trackingPanelDismissed','1');
     panel.classList.add('hidden');
     const menu=document.getElementById('menu');
     if(menu) menu.scrollIntoView({behavior:'smooth',block:'start'});
@@ -136,9 +137,49 @@ function enableKeepOrderingButton(){
   actions.prepend(button);
 }
 
+// Evita que el refresco automático de 4 segundos vuelva a abrir el seguimiento
+// mientras el cliente está navegando y agregando más productos.
+function keepTrackingPanelDismissed(){
+  const panel=document.getElementById('orderTracking');
+  if(!panel)return;
+
+  window.setTimeout(()=>{
+    if(typeof window.renderOrderTracking==='function'){
+      const originalRender=window.renderOrderTracking;
+      window.renderOrderTracking=function(order){
+        originalRender(order);
+        if(sessionStorage.getItem('trackingPanelDismissed')==='1'){
+          panel.classList.add('hidden');
+        }
+      };
+    }
+
+    if(typeof window.closeOrderTracking==='function'){
+      const originalClose=window.closeOrderTracking;
+      window.closeOrderTracking=function(){
+        sessionStorage.setItem('trackingPanelDismissed','1');
+        originalClose();
+      };
+    }
+
+    if(typeof window.startOrderTracking==='function'){
+      const originalStart=window.startOrderTracking;
+      window.startOrderTracking=function(orderId){
+        sessionStorage.removeItem('trackingPanelDismissed');
+        return originalStart(orderId);
+      };
+    }
+
+    if(sessionStorage.getItem('trackingPanelDismissed')==='1'){
+      panel.classList.add('hidden');
+    }
+  },0);
+}
+
 document.addEventListener('DOMContentLoaded',()=>{
   enableRepeatOrdering();
   enableKeepOrderingButton();
+  keepTrackingPanelDismissed();
 },{once:true});
 
 // En Meseros, cobrar desde cualquier consumo entregado cierra todos los consumos
