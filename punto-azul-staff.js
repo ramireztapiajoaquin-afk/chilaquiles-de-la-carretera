@@ -38,6 +38,18 @@
     });
   }
 
+  function ensureInventoryProLink(){
+    if(!path.endsWith('/dueno.html'))return;
+    const links=document.querySelector('.links');
+    if(!links || links.querySelector('[data-inventario-pro-link]'))return;
+    const a=document.createElement('a');
+    a.className='link';
+    a.href='inventario-pro.html';
+    a.dataset.inventarioProLink='1';
+    a.innerHTML='<span>📦</span>Inventario PRO';
+    links.insertBefore(a,links.firstChild);
+  }
+
   function forceBrand(){
     replaceText(document.body);
     ['restaurantName','restaurant'].forEach(id=>{
@@ -54,6 +66,7 @@
       mark.textContent='PUNTO AZUL';
       brand.appendChild(mark);
     }
+    ensureInventoryProLink();
   }
 
   if(document.readyState==='loading'){
