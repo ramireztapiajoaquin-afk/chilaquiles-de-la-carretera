@@ -115,3 +115,26 @@ window.APP_CONFIG = {
     document.head.appendChild(script);
   }
 })();
+
+// Tema Punto Azul para paneles operativos. Es únicamente presentación visual.
+(function loadPuntoAzulStaffTheme(){
+  const path=(location.pathname||'').toLowerCase();
+  const isStaff=['/meseros.html','/cocina.html','/caja.html','/dueno.html'].some(x=>path.endsWith(x));
+  if(!isStaff)return;
+
+  if(!document.querySelector('link[data-punto-azul-staff-theme]')){
+    const link=document.createElement('link');
+    link.rel='stylesheet';
+    link.href='punto-azul-staff.css?v=1';
+    link.dataset.puntoAzulStaffTheme='1';
+    document.head.appendChild(link);
+  }
+
+  if(!document.querySelector('script[data-punto-azul-staff-brand]')){
+    const script=document.createElement('script');
+    script.src='punto-azul-staff.js?v=1';
+    script.defer=true;
+    script.dataset.puntoAzulStaffBrand='1';
+    document.head.appendChild(script);
+  }
+})();
