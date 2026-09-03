@@ -16,7 +16,7 @@
   // CRM Ventas PRO añade identificación opcional de cliente a Cuenta PRO.
   if(path.endsWith('/meseros.html') && !document.querySelector('script[data-crm-ventas-pro]')){
     const script=document.createElement('script');
-    script.src='crm-ventas-pro.js?v=1';
+    script.src='crm-ventas-pro.js?v=2';
     script.defer=true;
     script.dataset.crmVentasPro='1';
     document.head.appendChild(script);
