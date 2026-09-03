@@ -68,6 +68,20 @@
     links.insertBefore(a,links.firstChild);
   }
 
+  function ensurePresentationProLink(){
+    if(!path.endsWith('/dueno.html'))return;
+    const links=document.querySelector('.links');
+    if(!links || links.querySelector('[data-presentacion-pro-link]'))return;
+    const a=document.createElement('a');
+    a.className='link';
+    a.href='presentacion-pro.html';
+    a.dataset.presentacionProLink='1';
+    a.innerHTML='<span>🎬</span>Presentación PRO';
+    const dashboard=links.querySelector('[data-dashboard-pro-link]');
+    if(dashboard && dashboard.nextSibling)links.insertBefore(a,dashboard.nextSibling);
+    else links.insertBefore(a,links.firstChild);
+  }
+
   function ensureInventoryProLink(){
     if(!path.endsWith('/dueno.html'))return;
     const links=document.querySelector('.links');
@@ -77,8 +91,10 @@
     a.href='inventario-pro.html';
     a.dataset.inventarioProLink='1';
     a.innerHTML='<span>📦</span>Inventario PRO';
+    const presentation=links.querySelector('[data-presentacion-pro-link]');
     const dashboard=links.querySelector('[data-dashboard-pro-link]');
-    if(dashboard && dashboard.nextSibling)links.insertBefore(a,dashboard.nextSibling);
+    const anchor=presentation||dashboard;
+    if(anchor && anchor.nextSibling)links.insertBefore(a,anchor.nextSibling);
     else links.insertBefore(a,links.firstChild);
   }
 
@@ -141,6 +157,7 @@
       brand.appendChild(mark);
     }
     ensureDashboardProLink();
+    ensurePresentationProLink();
     ensureInventoryProLink();
     ensurePurchasesProLink();
     ensureCrmProLink();
