@@ -36,6 +36,41 @@
     return video;
   }
 
+  function syncMusicButton(){
+    const music=document.getElementById('bgMusic');
+    const button=document.getElementById('musicToggle');
+    if(!music || !button)return;
+
+    const hasMusic=Boolean(music.currentSrc || music.src || music.getAttribute('src'));
+    if(!hasMusic)return;
+
+    button.classList.remove('hidden');
+    button.classList.add('punto-azul-music-btn');
+
+    const playing=!music.paused && !music.ended;
+    button.textContent=playing?'🔇 Silenciar':'🎵 Música';
+    button.setAttribute('aria-label',playing?'Silenciar música ambiental':'Activar música ambiental');
+    button.setAttribute('title',playing?'Silenciar música':'Activar música');
+    button.classList.toggle('is-playing',playing);
+  }
+
+  function setupMusicButton(){
+    const music=document.getElementById('bgMusic');
+    const button=document.getElementById('musicToggle');
+    if(!music || !button)return;
+
+    if(!button.dataset.puntoAzulMusicBound){
+      button.dataset.puntoAzulMusicBound='1';
+      button.addEventListener('click',()=>setTimeout(syncMusicButton,0));
+      music.addEventListener('play',syncMusicButton);
+      music.addEventListener('pause',syncMusicButton);
+      music.addEventListener('loadeddata',syncMusicButton);
+      music.addEventListener('canplay',syncMusicButton);
+    }
+
+    syncMusicButton();
+  }
+
   function applyBrand(){
     const title=document.getElementById('premiumTitle');
     if(title) title.textContent='Punto Azul Restaurante';
@@ -74,6 +109,7 @@
     });
 
     document.querySelectorAll('.punto-azul-logo-video,.punto-azul-menu-video').forEach(safePlay);
+    setupMusicButton();
   }
 
   if(document.readyState==='loading'){
@@ -82,17 +118,19 @@
     applyBrand();
   }
 
-  // shared.js puede reinyectar nombre/logo desde Supabase después de cargar.
-  // Reaplicamos únicamente el branding visible, sin tocar datos ni lógica.
+  // shared.js puede reinyectar nombre/logo y la música desde Supabase después de cargar.
+  // Reaplicamos únicamente la presentación visible, sin tocar pedidos ni datos.
   window.addEventListener('load',()=>{
     applyBrand();
     setTimeout(applyBrand,500);
     setTimeout(applyBrand,1600);
+    setTimeout(applyBrand,3000);
   });
 
   document.addEventListener('visibilitychange',()=>{
     if(!document.hidden){
       document.querySelectorAll('.punto-azul-logo-video,.punto-azul-menu-video').forEach(safePlay);
+      syncMusicButton();
     }
   });
 })();
