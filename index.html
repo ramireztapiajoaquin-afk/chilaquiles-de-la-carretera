@@ -44,7 +44,7 @@
 <div id="musicHint" class="music-hint">Música ambiental suave</div>
 <button id="musicToggle" class="music-toggle off hidden" type="button" aria-label="Activar o silenciar música">🎵</button>
 
-<script src="config.js?v=13"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="shared.js?v=13"></script>
+<script src="config.js?v=13"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="shared.js?v=18"></script>
 <script>
 
 function setupPremiumVideo(menuData){
@@ -398,7 +398,6 @@ function setupVoiceOver(restaurant){
     restoreMusic();
   });
 
-  // En móvil, la primera interacción del usuario permite iniciar audio.
   const firstInteraction=()=>{
     if(!voicePlayedOnce) playVoice();
   };
@@ -417,10 +416,9 @@ function setupBackgroundMusic(restaurant){
   }
 
   audio.src=restaurant.background_music_url;
-  audio.volume=0.12; // volumen bajo: 12%
+  audio.volume=0.12;
   audio.loop=true;
   btn.classList.remove("hidden");
-  if(publicCard) publicCard.classList.remove("hidden");
 
   const startMusic=()=>{
     if(!musicEnabled || musicStarted)return;
@@ -437,19 +435,9 @@ function setupBackgroundMusic(restaurant){
     }
   };
 
-  // En móviles el navegador exige una primera interacción del usuario.
   ["pointerdown","touchstart","keydown"].forEach(evt=>{
     document.addEventListener(evt,startMusic,{once:true,passive:true});
   });
-
-  
-  if(publicBtn){
-    publicBtn.addEventListener("click",(e)=>{
-      e.stopPropagation();
-      if(voiceIsPlaying) stopVoice();
-      else playVoice();
-    });
-  }
 
   btn.addEventListener("click",(e)=>{
     e.stopPropagation();
