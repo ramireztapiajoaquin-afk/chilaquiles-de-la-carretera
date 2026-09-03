@@ -82,6 +82,81 @@ window.APP_CONFIG = {
   window.addEventListener('pageshow',()=>setTimeout(verifyRole,0));
 })();
 
+// El panel de Administración solo puede mantenerse abierto con una sesión de rol "admin".
+// Si quedó activa una sesión de Mesero, Cocina o Caja al cambiar de panel, se cierra antes de permitir ediciones o subidas.
+(function enforceAdminOnlyPanel(){
+  if(!/\/admin\.html$/i.test(location.pathname)) return;
+
+  let guardClient = null;
+  let checking = false;
+
+  function setAdminBlocked(blocked,message=''){
+    let style=document.getElementById('adminOnlyRoleGuardStyle');
+    if(blocked){
+      if(!style){
+        style=document.createElement('style');
+        style.id='adminOnlyRoleGuardStyle';
+        style.textContent='#app{display:none!important}#login{display:grid!important}';
+        document.head.appendChild(style);
+      }
+      const status=document.getElementById('loginStatus');
+      if(status && message){
+        status.innerHTML='<div class="status err">'+message+'</div>';
+      }
+    }else if(style){
+      style.remove();
+    }
+  }
+
+  async function verifyAdminRole(){
+    if(checking || !window.supabase || !window.APP_CONFIG)return;
+    checking=true;
+    try{
+      guardClient=guardClient||window.supabase.createClient(
+        window.APP_CONFIG.SUPABASE_URL,
+        window.APP_CONFIG.SUPABASE_ANON_KEY
+      );
+      const {data:{session}}=await guardClient.auth.getSession();
+      if(!session){
+        setAdminBlocked(false);
+        return;
+      }
+      const {data:staff,error}=await guardClient
+        .from('meseros')
+        .select('rol,activo')
+        .eq('user_id',session.user.id)
+        .maybeSingle();
+      if(error)return;
+
+      if(!staff || staff.activo!==true || staff.rol!=='admin'){
+        setAdminBlocked(true,'⛔ La sesión anterior no es de Administrador. Inicia sesión con la cuenta ADMIN.');
+        await guardClient.auth.signOut();
+      }else{
+        setAdminBlocked(false);
+      }
+    }catch(error){
+      console.error('Admin role guard:',error);
+    }finally{
+      checking=false;
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded',()=>{
+    verifyAdminRole();
+    setTimeout(verifyAdminRole,350);
+    setTimeout(verifyAdminRole,1200);
+    if(window.supabase){
+      guardClient=window.supabase.createClient(
+        window.APP_CONFIG.SUPABASE_URL,
+        window.APP_CONFIG.SUPABASE_ANON_KEY
+      );
+      guardClient.auth.onAuthStateChange(()=>setTimeout(verifyAdminRole,0));
+    }
+  },{once:true});
+
+  window.addEventListener('pageshow',()=>setTimeout(verifyAdminRole,0));
+})();
+
 // Carga el módulo del video final de pago tanto en Administración como en el menú del cliente.
 (function loadPaymentFlowModule(){
   if(document.querySelector('script[data-payment-flow]'))return;
